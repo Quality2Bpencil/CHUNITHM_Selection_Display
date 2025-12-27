@@ -31,17 +31,17 @@ class DisplayWindow:
         """预加载必要的图片资源"""
         # 这里可以预加载一些常用的图片资源，提升显示速度
         preloaded = {}
-        background_path = "assets/picture/bg.png"
+        background_path = f"{Utils().get_project_root()}/assets/picture/bg.png"
         if os.path.exists(background_path):
             preloaded['background'] = self._load_image(background_path, 1920, 1080)
-        preloaded['assets/picture/frame.png'] = Image.open("assets/picture/frame.png").convert('RGBA')
-        preloaded['assets/picture/levels.dds'] = Image.open("assets/picture/levels.dds").convert('RGBA')
+        preloaded[f'{Utils().get_project_root()}/assets/picture/frame.png'] = Image.open(f"{Utils().get_project_root()}/assets/picture/frame.png").convert('RGBA')
+        preloaded[f'{Utils().get_project_root()}/assets/picture/levels.dds'] = Image.open(f"{Utils().get_project_root()}/assets/picture/levels.dds").convert('RGBA')
         return preloaded
     
     def preload_fonts(self):
         """预加载必要的字体资源"""
         preloaded_fonts = {}
-        font_path = "assets/SEGA_MARUGOTHICDB.ttf"
+        font_path = f"{Utils().get_project_root()}/assets/SEGA_MARUGOTHICDB.ttf"
         if os.path.exists(font_path):
             for size in range(10, 61):
                 preloaded_fonts[size] = ImageFont.truetype(font_path, size)
@@ -111,7 +111,7 @@ class DisplayWindow:
         frame_width = 424
         frame_height = 510
         frame_time = image_time
-        frame_path = "assets/picture/frame.png"
+        frame_path = f"{Utils().get_project_root()}/assets/picture/frame.png"
 
         #曲绘图片大小
         jacket_width = 300
@@ -122,7 +122,7 @@ class DisplayWindow:
         title_y_position = 834
 
         #两侧的等级框
-        level_image_path = "assets/picture/levels.dds"
+        level_image_path = f"{Utils().get_project_root()}/assets/picture/levels.dds"
         level_left = 4
         level_top = 378
         level_right = 79
@@ -523,7 +523,7 @@ class DisplayWindow:
             frame_width = 424
             frame_height = 510
             frame_time = image_time
-            frame_path = "assets/picture/frame.png"
+            frame_path = f"{Utils().get_project_root()}/assets/picture/frame.png"
 
             #曲绘图片大小
             jacket_width = 300
@@ -531,7 +531,7 @@ class DisplayWindow:
             jacket_time = image_time
             jacket_dy_position = 100
 
-            level_image_path = "assets/picture/levels.dds"
+            level_image_path = f"{Utils().get_project_root()}/assets/picture/levels.dds"
             level_left = 4
             level_top = 378
             level_right = 79
@@ -566,7 +566,7 @@ class DisplayWindow:
             title_dy_position = 240
             composer_dy_position = 288
 
-            font_path = "assets/SEGA_MARUGOTHICDB.ttf"
+            font_path = f"{Utils().get_project_root()}/assets/SEGA_MARUGOTHICDB.ttf"
             
             # 左侧曲目
             random_music1 = random.choice(list(Utils().music_list.values()))
@@ -994,7 +994,7 @@ class DisplayWindow:
     def get_adaptive_font_size(self, text, font_path, max_width, max_height, initial_size, min_size): # 新版，用这个
         """计算自适应字体大小，确保文本不超过指定宽度和高度"""
         size = initial_size
-        if font_path == "assets/SEGA_MARUGOTHICDB.ttf":
+        if font_path == f"{Utils().get_project_root()}/assets/SEGA_MARUGOTHICDB.ttf":
             font = self.preloaded_fonts.get(size, None)
         if not font:
             font = ImageFont.truetype(font_path, size)

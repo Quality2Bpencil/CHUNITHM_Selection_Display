@@ -1,4 +1,6 @@
 import pandas as pd
+import os
+import pathlib
 
 def Singleton(cls):
     instances = {}
@@ -12,6 +14,7 @@ def Singleton(cls):
 class Utils:
     def __init__(self):
         self.music_list = self.import_music_list()
+        self.project_root = self.get_project_root()
 
     @staticmethod
     def import_music_list():
@@ -28,3 +31,10 @@ class Utils:
             music_list[str(row['ID'])] = music_infomation
 
         return music_list
+
+    @staticmethod
+    def get_project_root():
+        current_path = pathlib.Path(__file__).resolve()
+        for parent in current_path.parents:
+            if (parent / 'src').exists():
+                return parent
