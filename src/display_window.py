@@ -127,12 +127,36 @@ class DisplayWindow:
         level_top = 378
         level_right = 79
         level_bottom = 462
-        crop_region = (level_left, level_top, level_right, level_bottom)
         level_width = level_right - level_left
         level_height = level_bottom - level_top
         level_time = image_time
         level_dx_position = 223
         level_dy_position = 160
+
+        level_number_path = level_image_path
+        level_number_top = 519
+        level_number_bottom = 554
+        level_number_left = [
+            12, 54, 92, 132, 171, 212, 252, 293, 331, 371
+        ]
+        level_number_right = [
+            36, 69, 117, 157, 197, 237, 276, 316, 356, 540
+        ]
+        level_plus_top = 517
+        level_plus_bottom = 530
+        level_plus_left = 411
+        level_plus_right = 424
+        level_plus_width = level_plus_right - level_plus_left
+        level_plus_height = level_plus_bottom - level_plus_top
+        level_number_height = level_number_bottom - level_number_top
+        level_number_time = level_time
+
+        level_number_dy_position = 178
+
+        title_dy_position = 240
+        composer_dy_position = 288
+
+        font_path = f"{Utils().get_project_root()}/assets/SEGA_MARUGOTHICDB.ttf"
 
         index = 0
         music_list_information = []
@@ -141,6 +165,10 @@ class DisplayWindow:
             music_list_information[index]['x_position'] = canvas_width // 2 + 800 * index
 
             if music_list_information[index]['x_position'] - frame_width * frame_time // 2 <= canvas_width:
+                music_name, title_font_size = self.get_adaptive_font_size(music['Name'], font_path, 580, 56, initial_size=40, min_size=30)
+                composer_name, composer_font_size = self.get_adaptive_font_size(music['Composer'], font_path, 580, 44, initial_size=20, min_size=15)
+
+                crop_region = (level_left, level_top, level_right, level_bottom)
                 img_overlay_list=[
                     {
                         'path': music['Jacket'],
@@ -163,10 +191,80 @@ class DisplayWindow:
                         'crop': crop_region
                     }
                 ]
+
+                # 等级
+                level = music['Const']
+                if level < 10:
+                    pass # 应该不会打小于10级的歌吧，我是懒狗不做了
+                elif level < 100:
+                    number1 = int(level) // 10
+                    number2 = int(level) % 10
+                    decimal = level - int(level)
+                    crop_region = (level_number_left[number1], level_number_top, level_number_right[number1], level_number_bottom)
+                    level_number_width = level_number_right[number1] - level_number_left[number1]
+                    img_overlay_list.append(
+                        {
+                            'path': level_number_path,
+                            'position': (
+                                int(frame_width * frame_time) // 2 - level_dx_position - 2 - 20,
+                                int(frame_height * frame_time) // 2 + level_number_dy_position
+                            ),
+                            'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
+                            'alpha': 1.0,
+                            'crop': crop_region
+                        }
+                    )
+                    crop_region = (level_number_left[number2], level_number_top, level_number_right[number2], level_number_bottom)
+                    level_number_width = level_number_right[number2] - level_number_left[number2]
+                    img_overlay_list.append(
+                        {
+                            'path': level_number_path,
+                            'position': (
+                                int(frame_width * frame_time) // 2 - level_dx_position - 2 + 20,
+                                int(frame_height * frame_time) // 2 + level_number_dy_position
+                            ),
+                            'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
+                            'alpha': 1.0,
+                            'crop': crop_region
+                        }
+                    )
+                    if decimal >= 0.5:
+                        crop_region = (level_plus_left, level_plus_top, level_plus_right, level_plus_bottom)
+                        img_overlay_list.append(
+                            {
+                                'path': level_number_path,
+                                'position': (
+                                    int(frame_width * frame_time) // 2 - level_dx_position + 40,
+                                    int(frame_height * frame_time) // 2 + level_number_dy_position - 30
+                                ),
+                                'size': (int(level_plus_width*level_time), int(level_plus_height*level_number_time)),
+                                'alpha': 1.0,
+                                'crop': crop_region
+                            }
+                        )
+                else:
+                    pass
                 tk_box = self.overlay_image(
                     base_image_path=frame_path,
                     img_overlay_list=img_overlay_list,
-                    text_overlay_list=[],
+                    text_overlay_list=[
+                        {
+                            'text': music_name,
+                            'position': (
+                                int(frame_width*frame_time) // 2,
+                                int(frame_height*frame_time) // 2 + title_dy_position
+                            ),
+                            'font_size': title_font_size,
+                        },
+                        {
+                            'text': composer_name,
+                            'position': (
+                                int(frame_width*frame_time) // 2,
+                                int(frame_height*frame_time) // 2 + composer_dy_position
+                            ),
+                            'font_size': composer_font_size,
+                        }
+                    ],
                     target_size=(int(frame_width*frame_time), int(frame_height*frame_time))
                 )
                 music_list_information[index]['box'] = self.canvas.create_image(
@@ -359,6 +457,11 @@ class DisplayWindow:
                         music_list_information[index]['box'] = None
                 elif (music_list_information[index]['x_position'] - frame_width * frame_time // 2 <= canvas_width and
                       music_list_information[index]['x_position'] + frame_width * frame_time // 2 >=0):
+                    # 实时生成box
+                    music_name, title_font_size = self.get_adaptive_font_size(music['Name'], font_path, 580, 56, initial_size=40, min_size=30)
+                    composer_name, composer_font_size = self.get_adaptive_font_size(music['Composer'], font_path, 580, 44, initial_size=20, min_size=15)
+
+                    crop_region = (level_left, level_top, level_right, level_bottom)
                     img_overlay_list=[
                         {
                             'path': music['Jacket'],
@@ -381,11 +484,82 @@ class DisplayWindow:
                             'crop': crop_region
                         }
                     ]
+
+                    # 等级
+                    level = music['Const']
+                    if level < 10:
+                        pass # 应该不会打小于10级的歌吧，我是懒狗不做了
+                    elif level < 100:
+                        number1 = int(level) // 10
+                        number2 = int(level) % 10
+                        decimal = level - int(level)
+                        crop_region = (level_number_left[number1], level_number_top, level_number_right[number1], level_number_bottom)
+                        level_number_width = level_number_right[number1] - level_number_left[number1]
+                        img_overlay_list.append(
+                            {
+                                'path': level_number_path,
+                                'position': (
+                                    int(frame_width * frame_time) // 2 - level_dx_position - 2 - 20,
+                                    int(frame_height * frame_time) // 2 + level_number_dy_position
+                                ),
+                                'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
+                                'alpha': 1.0,
+                                'crop': crop_region
+                            }
+                        )
+                        crop_region = (level_number_left[number2], level_number_top, level_number_right[number2], level_number_bottom)
+                        level_number_width = level_number_right[number2] - level_number_left[number2]
+                        img_overlay_list.append(
+                            {
+                                'path': level_number_path,
+                                'position': (
+                                    int(frame_width * frame_time) // 2 - level_dx_position - 2 + 20,
+                                    int(frame_height * frame_time) // 2 + level_number_dy_position
+                                ),
+                                'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
+                                'alpha': 1.0,
+                                'crop': crop_region
+                            }
+                        )
+                        if decimal >= 0.5:
+                            crop_region = (level_plus_left, level_plus_top, level_plus_right, level_plus_bottom)
+                            img_overlay_list.append(
+                                {
+                                    'path': level_number_path,
+                                    'position': (
+                                        int(frame_width * frame_time) // 2 - level_dx_position + 40,
+                                        int(frame_height * frame_time) // 2 + level_number_dy_position - 30
+                                    ),
+                                    'size': (int(level_plus_width*level_time), int(level_plus_height*level_number_time)),
+                                    'alpha': 1.0,
+                                    'crop': crop_region
+                                }
+                            )
+                    else:
+                        pass
+
                     if index == random_music_number - 1 or index == random_music_number - 3:
                         tk_box, music_list_information[index]['img'] = self.overlay_image(
                             base_image_path=frame_path,
                             img_overlay_list=img_overlay_list,
-                            text_overlay_list=[],
+                            text_overlay_list=[
+                                {
+                                    'text': music_name,
+                                    'position': (
+                                        int(frame_width*frame_time) // 2,
+                                        int(frame_height*frame_time) // 2 + title_dy_position
+                                    ),
+                                    'font_size': title_font_size,
+                                },
+                                {
+                                    'text': composer_name,
+                                    'position': (
+                                        int(frame_width*frame_time) // 2,
+                                        int(frame_height*frame_time) // 2 + composer_dy_position
+                                    ),
+                                    'font_size': composer_font_size,
+                                }
+                            ],
                             target_size=(int(frame_width*frame_time), int(frame_height*frame_time)),
                             output_img=True
                         )
@@ -393,7 +567,24 @@ class DisplayWindow:
                         tk_box = self.overlay_image(
                             base_image_path=frame_path,
                             img_overlay_list=img_overlay_list,
-                            text_overlay_list=[],
+                            text_overlay_list=[
+                                {
+                                    'text': music_name,
+                                    'position': (
+                                        int(frame_width*frame_time) // 2,
+                                        int(frame_height*frame_time) // 2 + title_dy_position
+                                    ),
+                                    'font_size': title_font_size,
+                                },
+                                {
+                                    'text': composer_name,
+                                    'position': (
+                                        int(frame_width*frame_time) // 2,
+                                        int(frame_height*frame_time) // 2 + composer_dy_position
+                                    ),
+                                    'font_size': composer_font_size,
+                                }
+                            ],
                             target_size=(int(frame_width*frame_time), int(frame_height*frame_time))
                         )
                     music_list_information[index]['box'] = self.canvas.create_image(
@@ -536,7 +727,6 @@ class DisplayWindow:
             level_top = 378
             level_right = 79
             level_bottom = 462
-            crop_region = (level_left, level_top, level_right, level_bottom)
             level_width = level_right - level_left
             level_height = level_bottom - level_top
             level_time = image_time
@@ -567,6 +757,47 @@ class DisplayWindow:
             composer_dy_position = 288
 
             font_path = f"{Utils().get_project_root()}/assets/SEGA_MARUGOTHICDB.ttf"
+
+            # 队名与选手名
+            text = data['team1']
+            self.canvas.create_text(
+                canvas_width // 2 - 400,
+                105,
+                text=text,
+                font=("Microsoft YaHei", 40, "bold"),
+                fill="black",
+                anchor=tk.CENTER
+            )
+
+            text = f'{data['player1']} 的自选曲'
+            self.canvas.create_text(
+                canvas_width // 2 - 400,
+                175,
+                text=text,
+                font=("Microsoft YaHei", 40, "bold"),
+                fill="black",
+                anchor=tk.CENTER
+            )
+
+            text = data['team2']
+            self.canvas.create_text(
+                canvas_width // 2 + 400,
+                105,
+                text=text,
+                font=("Microsoft YaHei", 40, "bold"),
+                fill="black",
+                anchor=tk.CENTER
+            )
+
+            text = f'{data['player2']} 的自选曲'
+            self.canvas.create_text(
+                canvas_width // 2 + 400,
+                175,
+                text=text,
+                font=("Microsoft YaHei", 40, "bold"),
+                fill="black",
+                anchor=tk.CENTER
+            )
             
             # 左侧曲目
             random_music1 = random.choice(list(Utils().music_list.values()))
@@ -576,6 +807,7 @@ class DisplayWindow:
             composer1_name, composer_font_size = self.get_adaptive_font_size(music1['Composer'], font_path, 580, 44, initial_size=20, min_size=15)
             jacket1_path = music1['Jacket']
 
+            crop_region = (level_left, level_top, level_right, level_bottom)
             img_overlay_list1=[
                 {
                     'path': jacket1_path,
@@ -599,7 +831,7 @@ class DisplayWindow:
                 }
             ]
 
-            #等级
+            # 左侧曲目等级
             level1 = music1['Const']
             if level1 < 10:
                 pass # 应该不会打小于10级的歌吧，我是懒狗不做了
@@ -613,8 +845,8 @@ class DisplayWindow:
                     {
                         'path': level_number_path,
                         'position': (
-                            canvas_width // 2 - 2 - 20,
-                            canvas_height // 2 + level_number_dy_position
+                            int(frame_width * frame_time) // 2 - level_dx_position - 2 - 20,
+                            int(frame_height * frame_time) // 2 + level_number_dy_position
                         ),
                         'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
                         'alpha': 1.0,
@@ -627,26 +859,28 @@ class DisplayWindow:
                     {
                         'path': level_number_path,
                         'position': (
-                            canvas_width // 2 - 2 + 20,
-                            canvas_height // 2 + level_number_dy_position
+                            int(frame_width * frame_time) // 2 - level_dx_position - 2 + 20,
+                            int(frame_height * frame_time) // 2 + level_number_dy_position
                         ),
                         'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
                         'alpha': 1.0,
                         'crop': crop_region
                     }
                 )
-                if decimal >= 0.5 and False:
+                if decimal >= 0.5:
                     crop_region = (level_plus_left, level_plus_top, level_plus_right, level_plus_bottom)
-                    tk_level1_plus = self._load_image(level_number_path, level_plus_width*level_time, level_plus_height*level_number_time, crop=crop_region)
-                    if tk_level1_plus:
-                        # 加号
-                        self.canvas.create_image(
-                            canvas_width // 2 - 623 + 40,
-                            canvas_height // 2 + 198,
-                            image=tk_level1_plus,
-                            anchor=tk.CENTER
-                        )
-                        self.image_references.append(tk_level1_plus)
+                    img_overlay_list1.append(
+                        {
+                            'path': level_number_path,
+                            'position': (
+                                int(frame_width * frame_time) // 2 - level_dx_position + 40,
+                                int(frame_height * frame_time) // 2 + level_number_dy_position - 30
+                            ),
+                            'size': (int(level_plus_width*level_time), int(level_plus_height*level_number_time)),
+                            'alpha': 1.0,
+                            'crop': crop_region
+                        }
+                    )
             else:
                 pass
             
@@ -681,6 +915,123 @@ class DisplayWindow:
                     anchor=tk.CENTER
                 )
                 self.image_references.append(tk_left_picture)
+
+            # 右侧曲目
+            random_music1 = random.choice(list(Utils().music_list.values()))
+            music2_id = data['music2']
+            music2 = Utils().music_list.get(music2_id, random_music1) # 如果找不到对应曲目，就用随机曲
+            music2_name, title_font_size = self.get_adaptive_font_size(music2['Name'], font_path, 580, 56, initial_size=40, min_size=30)
+            composer2_name, composer_font_size = self.get_adaptive_font_size(music2['Composer'], font_path, 580, 44, initial_size=20, min_size=15)
+            jacket2_path = music2['Jacket']
+
+            crop_region = (level_left, level_top, level_right, level_bottom)
+            img_overlay_list1=[
+                {
+                    'path': jacket2_path,
+                    'position': (
+                        int(frame_width*frame_time) // 2,
+                        int(frame_height*frame_time) // 2 - jacket_dy_position
+                    ),
+                    'size': (int(jacket_width*jacket_time), int(jacket_height*jacket_time)),
+                    'alpha': 1.0,
+                    'crop': None
+                },
+                {
+                    'path': level_image_path,
+                    'position': (
+                        int(frame_width*frame_time) // 2 - level_dx_position,
+                        int(frame_height*frame_time) // 2 + level_dy_position
+                    ),
+                    'size': (int(level_width*level_time), int(level_height*level_time)),
+                    'alpha': 1.0,
+                    'crop': crop_region
+                }
+            ]
+
+            # 右侧曲目等级
+            level2 = music2['Const']
+            if level2 < 10:
+                pass # 应该不会打小于10级的歌吧，我是懒狗不做了
+            elif level2 <100:
+                number1 = int(level2) // 10
+                number2 = int(level2) % 10
+                decimal = level2 - int(level2)
+                crop_region = (level_number_left[number1], level_number_top, level_number_right[number1], level_number_bottom)
+                level_number_width = level_number_right[number1] - level_number_left[number1]
+                img_overlay_list1.append(
+                    {
+                        'path': level_number_path,
+                        'position': (
+                            int(frame_width * frame_time) // 2 - level_dx_position - 2 - 20,
+                            int(frame_height * frame_time) // 2 + level_number_dy_position
+                        ),
+                        'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
+                        'alpha': 1.0,
+                        'crop': crop_region
+                    }
+                )
+                crop_region = (level_number_left[number2], level_number_top, level_number_right[number2], level_number_bottom)
+                level_number_width = level_number_right[number2] - level_number_left[number2]
+                img_overlay_list1.append(
+                    {
+                        'path': level_number_path,
+                        'position': (
+                            int(frame_width * frame_time) // 2 - level_dx_position - 2 + 20,
+                            int(frame_height * frame_time) // 2 + level_number_dy_position
+                        ),
+                        'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
+                        'alpha': 1.0,
+                        'crop': crop_region
+                    }
+                )
+                if decimal >= 0.5:
+                    crop_region = (level_plus_left, level_plus_top, level_plus_right, level_plus_bottom)
+                    img_overlay_list1.append(
+                        {
+                            'path': level_number_path,
+                            'position': (
+                                int(frame_width * frame_time) // 2 - level_dx_position + 40,
+                                int(frame_height * frame_time) // 2 + level_number_dy_position - 30
+                            ),
+                            'size': (int(level_plus_width*level_time), int(level_plus_height*level_number_time)),
+                            'alpha': 1.0,
+                            'crop': crop_region
+                        }
+                    )
+            else:
+                pass
+            
+            tk_right_picture = self.overlay_image(
+                base_image_path=frame_path,
+                img_overlay_list=img_overlay_list1,
+                text_overlay_list=[
+                    {
+                        'text': music2_name,
+                        'position': (
+                            int(frame_width*frame_time) // 2,
+                            int(frame_height*frame_time) // 2 + title_dy_position
+                        ),
+                        'font_size': title_font_size,
+                    },
+                    {
+                        'text': composer2_name,
+                        'position': (
+                            int(frame_width*frame_time) // 2,
+                            int(frame_height*frame_time) // 2 + composer_dy_position
+                        ),
+                        'font_size': composer_font_size,
+                    }
+                ],
+                target_size=(int(frame_width*frame_time), int(frame_height*frame_time))
+            )
+            if tk_right_picture:
+                self.canvas.create_image(
+                    canvas_width // 2 + 400,
+                    canvas_height // 2 + 50,
+                    image=tk_right_picture,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_right_picture)
 
         # 如果有数据，显示图片
         if data and False: # 这些都被重构了，我操你妈
