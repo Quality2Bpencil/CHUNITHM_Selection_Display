@@ -3,7 +3,7 @@ from tkinter import ttk, font
 from PIL import Image, ImageTk, ImageDraw, ImageFont
 from wand.image import Image as WandImage
 import io
-from utils import Utils
+from utils import Utils, CurrentProcess
 import threading
 import os
 import random
@@ -28,6 +28,7 @@ class DisplayWindow:
         self.preloaded_fonts, self.preloaded_BPM_font = self.preload_fonts()
 
         self._display_background('background')
+        self.current_process = CurrentProcess.NONE
         
     def preload_images(self):
         """预加载必要的图片资源"""
@@ -82,8 +83,7 @@ class DisplayWindow:
             print(f"显示选曲错误: {e}")
 
     def random_music(self, data):
-        random_music_number = random.randint(17, 23)
-        # random_music_number = 10 # random_music_number至少要为10，不然会bug
+        random_music_number = 35 + random.randint(-5, 5)
         random_music_list = []
         for index in range(random_music_number):
             music = random.choice(list(Utils().music_list.values()))
@@ -333,6 +333,8 @@ class DisplayWindow:
             else:
                 music_list_information[index]['box'] = None
 
+            index += 1
+
             """
             #边框
             if music_list_information[index]['x_position'] - frame_width * frame_time // 2 <= canvas_width:
@@ -403,18 +405,14 @@ class DisplayWindow:
             else:
                 music_list_information[index]['level'] = None
             """
-            
-            index += 1
-
-        max_speed = 50
-        speed = 0
-        acceleration = 0.5
-        total_distance = (random_music_number - 2) * 800
 
         def fade_out():
             index_range = [random_music_number-1, random_music_number-3]
             alpha = 1.0
             def step():
+                if self.current_process != CurrentProcess.RANDOM_MUSIC:
+                    return
+
                 nonlocal alpha
                 alpha -= 0.05
                 for index in index_range:
@@ -490,18 +488,26 @@ class DisplayWindow:
                 self.root.after(30, step)
             step()
 
+        max_speed = 70.0
+        speed = 0.0
+        acceleration = 0.5
+        deceleration = 0.7
+        total_distance = (random_music_number - 2) * 800
+
         def move():
-            index = 0
+            if self.current_process != CurrentProcess.RANDOM_MUSIC:
+                return
+
             nonlocal speed, total_distance
             if total_distance <= 0:
                 self.root.after(700, fade_out)
                 return
-            elif total_distance < max_speed * max_speed:
-                speed -= acceleration
+            elif total_distance < speed * speed / deceleration / 2 + 20 and speed > 1+ deceleration:
+                speed -= deceleration
             elif speed < max_speed:
                 speed += acceleration
             total_distance -= int(speed)
-
+            index = 0
             for music in random_music_list:
                 music_list_information[index]['x_position'] -= int(speed)
 
@@ -1775,6 +1781,13 @@ class DisplayWindow:
         handler = handlers.get(command)
         if handler:
             try:
+                if command == "RANDOM_MUSIC":
+                    self.current_process = CurrentProcess.RANDOM_MUSIC
+                elif command == "DISPLAY_SELECTION":
+                    if data is None:
+                        self.current_process = CurrentProcess.NONE
+                    else:
+                        self.current_process = CurrentProcess.DISPLAY_SELECTION
                 handler(data)
             except Exception as e:
                 self._show_error(f"命令处理错误 ({command}): {str(e)}")

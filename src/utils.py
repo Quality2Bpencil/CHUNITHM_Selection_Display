@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import pathlib
+from enum import Enum
 
 def Singleton(cls):
     instances = {}
@@ -45,3 +46,8 @@ class Utils:
         for parent in current_path.parents:
             if (parent / 'src').exists():
                 return parent
+            
+class CurrentProcess(Enum):
+    NONE = 0
+    DISPLAY_SELECTION = 1
+    RANDOM_MUSIC = 2
