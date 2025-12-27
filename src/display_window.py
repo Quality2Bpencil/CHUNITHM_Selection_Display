@@ -34,24 +34,24 @@ class DisplayWindow:
         """预加载必要的图片资源"""
         # 这里可以预加载一些常用的图片资源，提升显示速度
         preloaded = {}
-        background_path = f"{Utils().get_project_root()}/assets/picture/bg.png"
+        background_path = Utils().resource_path("assets/picture/bg.png")
         if os.path.exists(background_path):
             preloaded['background'] = self._load_image(background_path, 1920, 1080)
-        background_path = f"{Utils().get_project_root()}/assets/picture/lv_bg.png"
+        background_path = Utils().resource_path("assets/picture/lv_bg.png")
         if os.path.exists(background_path):
             preloaded['lv_background'] = self._load_image(background_path, 1920, 1080)
-        preloaded[f'{Utils().get_project_root()}/assets/picture/frame.png'] = Image.open(f"{Utils().get_project_root()}/assets/picture/frame.png").convert('RGBA')
-        preloaded[f'{Utils().get_project_root()}/assets/picture/levels.dds'] = Image.open(f"{Utils().get_project_root()}/assets/picture/levels.dds").convert('RGBA')
+        preloaded[Utils().resource_path("assets/picture/frame.png")] = Image.open(Utils().resource_path("assets/picture/frame.png")).convert('RGBA')
+        preloaded[Utils().resource_path("assets/picture/levels.dds")] = Image.open(Utils().resource_path("assets/picture/levels.dds")).convert('RGBA')
         return preloaded
     
     def preload_fonts(self):
         """预加载必要的字体资源"""
         preloaded_fonts = {}
-        font_path = f"{Utils().get_project_root()}/assets/fonts/SEGA_MARUGOTHICDB.ttf"
+        font_path = Utils().resource_path("assets/fonts/SEGA_MARUGOTHICDB.ttf")
         if os.path.exists(font_path):
             for size in range(10, 61):
                 preloaded_fonts[size] = ImageFont.truetype(font_path, size)
-        BPM_font_path = f"{Utils().get_project_root()}/assets/fonts/Helvetica Bold.ttf"
+        BPM_font_path = Utils().resource_path("assets/fonts/Helvetica Bold.ttf")
         preloaded_BPM_font = ImageFont.truetype(BPM_font_path, 24)
         return preloaded_fonts, preloaded_BPM_font
 
@@ -118,7 +118,7 @@ class DisplayWindow:
         frame_width = 424
         frame_height = 510
         frame_time = image_time
-        frame_path = f"{Utils().get_project_root()}/assets/picture/frame.png"
+        frame_path = Utils().resource_path("assets/picture/frame.png")
 
         #曲绘图片大小
         jacket_width = 300
@@ -132,7 +132,7 @@ class DisplayWindow:
         title_y_position = 834
 
         #两侧的等级框
-        level_image_path = f"{Utils().get_project_root()}/assets/picture/levels.dds"
+        level_image_path = Utils().resource_path("assets/picture/levels.dds")
         level_left = 4
         level_top = 378
         level_right = 79
@@ -180,8 +180,8 @@ class DisplayWindow:
         nd_name_dx_position = -102
         _nd_font_size = 16
 
-        font_path = f"{Utils().get_project_root()}/assets/fonts/SEGA_MARUGOTHICDB.ttf"
-        BPM_font_path = f"{Utils().get_project_root()}/assets/fonts/Helvetica Bold.ttf"
+        font_path = Utils().resource_path("assets/fonts/SEGA_MARUGOTHICDB.ttf")
+        BPM_font_path = Utils().resource_path("assets/fonts/Helvetica Bold.ttf")
 
         index = 0
         music_list_information = []
@@ -824,7 +824,7 @@ class DisplayWindow:
             frame_width = 424
             frame_height = 510
             frame_time = image_time
-            frame_path = f"{Utils().get_project_root()}/assets/picture/frame.png"
+            frame_path = Utils().resource_path("assets/picture/frame.png")
 
             #曲绘图片大小
             jacket_width = 300
@@ -836,7 +836,7 @@ class DisplayWindow:
             text_max_width = 560
             nd_max_width = 278
 
-            level_image_path = f"{Utils().get_project_root()}/assets/picture/levels.dds"
+            level_image_path = Utils().resource_path("assets/picture/levels.dds")
             level_left = 4
             level_top = 378
             level_right = 79
@@ -884,8 +884,8 @@ class DisplayWindow:
             nd_name_dx_position = -102
             _nd_font_size = 16
 
-            font_path = f"{Utils().get_project_root()}/assets/fonts/SEGA_MARUGOTHICDB.ttf"
-            BPM_font_path = f"{Utils().get_project_root()}/assets/fonts/Helvetica Bold.ttf"
+            font_path = Utils().resource_path("assets/fonts/SEGA_MARUGOTHICDB.ttf")
+            BPM_font_path = Utils().resource_path("assets/fonts/Helvetica Bold.ttf")
 
             # 队名与选手名
             text = data['team1']
@@ -1534,7 +1534,7 @@ class DisplayWindow:
     def get_adaptive_font_size(self, text, font_path, max_width, max_height, initial_size, min_size): # 新版，用这个
         """计算自适应字体大小，确保文本不超过指定宽度和高度"""
         size = initial_size
-        if font_path == f"{Utils().get_project_root()}/assets/fonts/SEGA_MARUGOTHICDB.ttf":
+        if font_path == Utils().resource_path("assets/fonts/SEGA_MARUGOTHICDB.ttf"):
             font = self.preloaded_fonts.get(size, None)
         if not font:
             font = ImageFont.truetype(font_path, size)
@@ -1719,7 +1719,7 @@ class DisplayWindow:
                 # 加载字体
                 if text_info.get('font_path'):
                     font_path = text_info.get('font_path')
-                    if font_path == f"{Utils().get_project_root()}/assets/fonts/Helvetica Bold.ttf" and font_size == 24:
+                    if font_path == Utils().resource_path("assets/fonts/Helvetica Bold.ttf") and font_size == 24:
                         font = self.preloaded_BPM_font
                     else:
                         font = ImageFont.truetype(font_path, font_size)

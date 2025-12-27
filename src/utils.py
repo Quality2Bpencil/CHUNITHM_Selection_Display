@@ -1,5 +1,5 @@
 import pandas as pd
-import os
+import os, sys
 import pathlib
 from enum import Enum
 
@@ -14,12 +14,20 @@ def Singleton(cls):
 @Singleton
 class Utils:
     def __init__(self):
+        self.base_path = self.get_base_path()
         self.music_list = self.import_music_list()
-        self.project_root = self.get_project_root()
-
+        
     @staticmethod
-    def import_music_list():
-        df = pd.read_excel('assets/music_data/MusicData.xlsx')
+    def get_base_path():
+        if hasattr(sys, "_MEIPASS"):
+            return sys._MEIPASS
+        return pathlib.Path(__file__).parent.parent.resolve()
+
+    def resource_path(self,relative_path):
+        return os.path.join(self.base_path, relative_path)
+
+    def import_music_list(self):
+        df = pd.read_excel(self.resource_path('assets/music_data/MusicData.xlsx'))
         music_list = {}
 
         for index, row in df.iterrows():
@@ -27,11 +35,11 @@ class Utils:
                 'Name': row['曲名'],
                 'Composer': row['曲师'],
                 'Const': row['MASTER:大师'],
-                'Jacket': f'assets/picture/jackets/CHU_UI_Jacket_{str(row['ID']).zfill(4)}.dds'
+                'Jacket': self.resource_path(f'assets/picture/jackets/CHU_UI_Jacket_{str(row['ID']).zfill(4)}.dds')
             }
             music_list[str(row['ID'])] = music_infomation
 
-        df = pd.read_excel('assets/music_data/MusicData_BPM_ND.xlsx')
+        df = pd.read_excel(self.resource_path('assets/music_data/MusicData_BPM_ND.xlsx'))
 
         for index, row in df.iterrows():
             if str(row['ID']) in music_list:
@@ -39,13 +47,6 @@ class Utils:
                 music_list[str(row['ID'])]['ND'] = row['MASTER谱师']
 
         return music_list
-
-    @staticmethod
-    def get_project_root():
-        current_path = pathlib.Path(__file__).resolve()
-        for parent in current_path.parents:
-            if (parent / 'src').exists():
-                return parent
             
 class CurrentProcess(Enum):
     NONE = 0
