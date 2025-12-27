@@ -1,6 +1,6 @@
 # CHUNITHM Selection Display (ver 0.2-alpha)
 
-## 描述
+## 简介
 它可以在中二节奏比赛中展示玩家的选曲，也可以随机选择一首乐曲并展示。
 
 ## 已实现功能：
