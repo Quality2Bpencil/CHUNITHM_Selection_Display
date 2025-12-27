@@ -25,7 +25,9 @@ class DisplayWindow:
         self.setup_ui()
 
         self.preloaded = self.preload_images()
-        self.preloaded_fonts = self.preload_fonts()
+        self.preloaded_fonts, self.preloaded_BPM_font = self.preload_fonts()
+
+        self._display_background('background')
         
     def preload_images(self):
         """预加载必要的图片资源"""
@@ -34,6 +36,9 @@ class DisplayWindow:
         background_path = f"{Utils().get_project_root()}/assets/picture/bg.png"
         if os.path.exists(background_path):
             preloaded['background'] = self._load_image(background_path, 1920, 1080)
+        background_path = f"{Utils().get_project_root()}/assets/picture/lv_bg.png"
+        if os.path.exists(background_path):
+            preloaded['lv_background'] = self._load_image(background_path, 1920, 1080)
         preloaded[f'{Utils().get_project_root()}/assets/picture/frame.png'] = Image.open(f"{Utils().get_project_root()}/assets/picture/frame.png").convert('RGBA')
         preloaded[f'{Utils().get_project_root()}/assets/picture/levels.dds'] = Image.open(f"{Utils().get_project_root()}/assets/picture/levels.dds").convert('RGBA')
         return preloaded
@@ -41,11 +46,13 @@ class DisplayWindow:
     def preload_fonts(self):
         """预加载必要的字体资源"""
         preloaded_fonts = {}
-        font_path = f"{Utils().get_project_root()}/assets/SEGA_MARUGOTHICDB.ttf"
+        font_path = f"{Utils().get_project_root()}/assets/fonts/SEGA_MARUGOTHICDB.ttf"
         if os.path.exists(font_path):
             for size in range(10, 61):
                 preloaded_fonts[size] = ImageFont.truetype(font_path, size)
-        return preloaded_fonts
+        BPM_font_path = f"{Utils().get_project_root()}/assets/fonts/Helvetica Bold.ttf"
+        preloaded_BPM_font = ImageFont.truetype(BPM_font_path, 24)
+        return preloaded_fonts, preloaded_BPM_font
 
     def setup_ui(self):
         """设置用户界面"""
@@ -75,8 +82,8 @@ class DisplayWindow:
             print(f"显示选曲错误: {e}")
 
     def random_music(self, data):
-        #random_music_number = random.randint(17, 23)
-        random_music_number = 10 # random_music_number至少要为10，不然会bug
+        random_music_number = random.randint(17, 23)
+        # random_music_number = 10 # random_music_number至少要为10，不然会bug
         random_music_list = []
         for index in range(random_music_number):
             music = random.choice(list(Utils().music_list.values()))
@@ -93,7 +100,7 @@ class DisplayWindow:
         canvas_height = 1080
         
         # 显示背景
-        self._display_background(canvas_width, canvas_height)
+        self._display_background('lv_background')
 
         #标题
         self.canvas.create_text(
@@ -118,6 +125,9 @@ class DisplayWindow:
         jacket_height = 300
         jacket_time = image_time
         jacket_dy_position =  100
+
+        text_max_width = 560
+        nd_max_width = 278
 
         title_y_position = 834
 
@@ -156,7 +166,22 @@ class DisplayWindow:
         title_dy_position = 240
         composer_dy_position = 288
 
-        font_path = f"{Utils().get_project_root()}/assets/SEGA_MARUGOTHICDB.ttf"
+        BPM_dx_position = 256
+        BPM_dy_position = 328
+        BPM_font_size = 24
+
+        nd_top = 491
+        nd_left = 193
+        nd_right = 311
+        nd_bottom = 501
+
+        nd_dx_position = -191
+        nd_dy_position = 328
+        nd_name_dx_position = -102
+        _nd_font_size = 16
+
+        font_path = f"{Utils().get_project_root()}/assets/fonts/SEGA_MARUGOTHICDB.ttf"
+        BPM_font_path = f"{Utils().get_project_root()}/assets/fonts/Helvetica Bold.ttf"
 
         index = 0
         music_list_information = []
@@ -165,8 +190,9 @@ class DisplayWindow:
             music_list_information[index]['x_position'] = canvas_width // 2 + 800 * index
 
             if music_list_information[index]['x_position'] - frame_width * frame_time // 2 <= canvas_width:
-                music_name, title_font_size = self.get_adaptive_font_size(music['Name'], font_path, 580, 56, initial_size=40, min_size=30)
-                composer_name, composer_font_size = self.get_adaptive_font_size(music['Composer'], font_path, 580, 44, initial_size=20, min_size=15)
+                music_name, title_font_size = self.get_adaptive_font_size(music['Name'], font_path, text_max_width, 56, initial_size=40, min_size=30)
+                composer_name, composer_font_size = self.get_adaptive_font_size(music['Composer'], font_path, text_max_width, 44, initial_size=20, min_size=15)
+                nd_name, nd_font_size = self.get_adaptive_font_size(music['ND'], font_path, nd_max_width, 24, initial_size=_nd_font_size, min_size=_nd_font_size)
 
                 crop_region = (level_left, level_top, level_right, level_bottom)
                 img_overlay_list=[
@@ -189,6 +215,16 @@ class DisplayWindow:
                         'size': (int(level_width*level_time), int(level_height*level_time)),
                         'alpha': 1.0,
                         'crop': crop_region
+                    },
+                    {
+                        'path': level_image_path,
+                        'position': (
+                            int(frame_width*frame_time) // 2 + nd_dx_position,
+                            int(frame_height*frame_time) // 2 + nd_dy_position
+                        ),
+                        'size': (int((nd_right - nd_left)*level_time), int((nd_bottom - nd_top)*level_time)),
+                        'alpha': 1.0,
+                        'crop': (nd_left, nd_top, nd_right, nd_bottom)
                     }
                 ]
 
@@ -263,6 +299,25 @@ class DisplayWindow:
                                 int(frame_height*frame_time) // 2 + composer_dy_position
                             ),
                             'font_size': composer_font_size,
+                        },
+                        {
+                            'text': str(round(float(music['BPM']))),
+                            'position': (
+                                int(frame_width*frame_time) // 2 + BPM_dx_position,
+                                int(frame_height*frame_time) // 2 + BPM_dy_position
+                            ),
+                            'font_size': BPM_font_size,
+                            'font_path': BPM_font_path
+                        },
+                        {
+                            'text': nd_name,
+                            'position': (
+                                int(frame_width*frame_time) // 2 + nd_name_dx_position,
+                                int(frame_height*frame_time) // 2 + nd_dy_position
+                            ),
+                            'font_size': nd_font_size,
+                            'font_path': font_path,
+                            'anchor': 'lm'
                         }
                     ],
                     target_size=(int(frame_width*frame_time), int(frame_height*frame_time))
@@ -361,7 +416,7 @@ class DisplayWindow:
             alpha = 1.0
             def step():
                 nonlocal alpha
-                alpha -= 0.1
+                alpha -= 0.05
                 for index in index_range:
                     if alpha <= 0:
                         if music_list_information[index]['box']:
@@ -381,7 +436,7 @@ class DisplayWindow:
                         # 更新canvas上的图像
                         self.canvas.itemconfig(music_list_information[index]['box'], image=new_tk)
                         self.image_references.append(new_tk)
-                self.root.after(50, step)
+                self.root.after(30, step)
             step()
             return
             index_range = [random_music_number-1, random_music_number-3]
@@ -439,7 +494,7 @@ class DisplayWindow:
             index = 0
             nonlocal speed, total_distance
             if total_distance <= 0:
-                fade_out()
+                self.root.after(700, fade_out)
                 return
             elif total_distance < max_speed * max_speed:
                 speed -= acceleration
@@ -458,8 +513,9 @@ class DisplayWindow:
                 elif (music_list_information[index]['x_position'] - frame_width * frame_time // 2 <= canvas_width and
                       music_list_information[index]['x_position'] + frame_width * frame_time // 2 >=0):
                     # 实时生成box
-                    music_name, title_font_size = self.get_adaptive_font_size(music['Name'], font_path, 580, 56, initial_size=40, min_size=30)
-                    composer_name, composer_font_size = self.get_adaptive_font_size(music['Composer'], font_path, 580, 44, initial_size=20, min_size=15)
+                    music_name, title_font_size = self.get_adaptive_font_size(music['Name'], font_path, text_max_width, 56, initial_size=40, min_size=30)
+                    composer_name, composer_font_size = self.get_adaptive_font_size(music['Composer'], font_path, text_max_width, 44, initial_size=20, min_size=15)
+                    nd_name, nd_font_size = self.get_adaptive_font_size(music['ND'], font_path, nd_max_width, 24, initial_size=_nd_font_size, min_size=_nd_font_size)
 
                     crop_region = (level_left, level_top, level_right, level_bottom)
                     img_overlay_list=[
@@ -482,6 +538,16 @@ class DisplayWindow:
                             'size': (int(level_width*level_time), int(level_height*level_time)),
                             'alpha': 1.0,
                             'crop': crop_region
+                        },
+                        {
+                            'path': level_image_path,
+                            'position': (
+                                int(frame_width*frame_time) // 2 + nd_dx_position,
+                                int(frame_height*frame_time) // 2 + nd_dy_position
+                            ),
+                            'size': (int((nd_right - nd_left)*level_time), int((nd_bottom - nd_top)*level_time)),
+                            'alpha': 1.0,
+                            'crop': (nd_left, nd_top, nd_right, nd_bottom)
                         }
                     ]
 
@@ -558,6 +624,25 @@ class DisplayWindow:
                                         int(frame_height*frame_time) // 2 + composer_dy_position
                                     ),
                                     'font_size': composer_font_size,
+                                },
+                                {
+                                    'text': str(round(float(music['BPM']))),
+                                    'position': (
+                                        int(frame_width*frame_time) // 2 + BPM_dx_position,
+                                        int(frame_height*frame_time) // 2 + BPM_dy_position
+                                    ),
+                                    'font_size': BPM_font_size,
+                                    'font_path': BPM_font_path
+                                },
+                                {
+                                    'text': nd_name,
+                                    'position': (
+                                        int(frame_width*frame_time) // 2 + nd_name_dx_position,
+                                        int(frame_height*frame_time) // 2 + nd_dy_position
+                                    ),
+                                    'font_size': nd_font_size,
+                                    'font_path': font_path,
+                                    'anchor': 'lm'
                                 }
                             ],
                             target_size=(int(frame_width*frame_time), int(frame_height*frame_time)),
@@ -583,6 +668,25 @@ class DisplayWindow:
                                         int(frame_height*frame_time) // 2 + composer_dy_position
                                     ),
                                     'font_size': composer_font_size,
+                                },
+                                {
+                                    'text': str(round(float(music['BPM']))),
+                                    'position': (
+                                        int(frame_width*frame_time) // 2 + BPM_dx_position,
+                                        int(frame_height*frame_time) // 2 + BPM_dy_position
+                                    ),
+                                    'font_size': BPM_font_size,
+                                    'font_path': BPM_font_path
+                                },
+                                {
+                                    'text': nd_name,
+                                    'position': (
+                                        int(frame_width*frame_time) // 2 + nd_name_dx_position,
+                                        int(frame_height*frame_time) // 2 + nd_dy_position
+                                    ),
+                                    'font_size': nd_font_size,
+                                    'font_path': font_path,
+                                    'anchor': 'lm'
                                 }
                             ],
                             target_size=(int(frame_width*frame_time), int(frame_height*frame_time))
@@ -703,7 +807,7 @@ class DisplayWindow:
         canvas_height = self.canvas.winfo_height()
         
         # 显示背景
-        self._display_background(canvas_width, canvas_height)
+        self._display_background('background')
 
         if data:
             image_time = 1.4
@@ -721,6 +825,10 @@ class DisplayWindow:
             jacket_height = 300
             jacket_time = image_time
             jacket_dy_position = 100
+
+            #文字最大长度
+            text_max_width = 560
+            nd_max_width = 278
 
             level_image_path = f"{Utils().get_project_root()}/assets/picture/levels.dds"
             level_left = 4
@@ -756,7 +864,22 @@ class DisplayWindow:
             title_dy_position = 240
             composer_dy_position = 288
 
-            font_path = f"{Utils().get_project_root()}/assets/SEGA_MARUGOTHICDB.ttf"
+            BPM_dx_position = 256
+            BPM_dy_position = 328
+            BPM_font_size = 24
+
+            nd_top = 491
+            nd_left = 193
+            nd_right = 311
+            nd_bottom = 501
+
+            nd_dx_position = -191
+            nd_dy_position = 328
+            nd_name_dx_position = -102
+            _nd_font_size = 16
+
+            font_path = f"{Utils().get_project_root()}/assets/fonts/SEGA_MARUGOTHICDB.ttf"
+            BPM_font_path = f"{Utils().get_project_root()}/assets/fonts/Helvetica Bold.ttf"
 
             # 队名与选手名
             text = data['team1']
@@ -803,8 +926,9 @@ class DisplayWindow:
             random_music1 = random.choice(list(Utils().music_list.values()))
             music1_id = data['music1']
             music1 = Utils().music_list.get(music1_id, random_music1) # 如果找不到对应曲目，就用随机曲
-            music1_name, title_font_size = self.get_adaptive_font_size(music1['Name'], font_path, 580, 56, initial_size=40, min_size=30)
-            composer1_name, composer_font_size = self.get_adaptive_font_size(music1['Composer'], font_path, 580, 44, initial_size=20, min_size=15)
+            music1_name, title_font_size = self.get_adaptive_font_size(music1['Name'], font_path, text_max_width, 56, initial_size=40, min_size=30)
+            composer1_name, composer_font_size = self.get_adaptive_font_size(music1['Composer'], font_path, text_max_width, 44, initial_size=20, min_size=15)
+            nd1_name, nd_font_size = self.get_adaptive_font_size(music1['ND'], font_path, nd_max_width, 24, initial_size=_nd_font_size, min_size=_nd_font_size)
             jacket1_path = music1['Jacket']
 
             crop_region = (level_left, level_top, level_right, level_bottom)
@@ -828,6 +952,16 @@ class DisplayWindow:
                     'size': (int(level_width*level_time), int(level_height*level_time)),
                     'alpha': 1.0,
                     'crop': crop_region
+                },
+                {
+                    'path': level_image_path,
+                    'position': (
+                        int(frame_width*frame_time) // 2 + nd_dx_position,
+                        int(frame_height*frame_time) // 2 + nd_dy_position
+                    ),
+                    'size': (int((nd_right - nd_left)*level_time), int((nd_bottom - nd_top)*level_time)),
+                    'alpha': 1.0,
+                    'crop': (nd_left, nd_top, nd_right, nd_bottom)
                 }
             ]
 
@@ -903,6 +1037,25 @@ class DisplayWindow:
                             int(frame_height*frame_time) // 2 + composer_dy_position
                         ),
                         'font_size': composer_font_size,
+                    },
+                    {
+                        'text': str(round(float(music1['BPM']))),
+                        'position': (
+                            int(frame_width*frame_time) // 2 + BPM_dx_position,
+                            int(frame_height*frame_time) // 2 + BPM_dy_position
+                        ),
+                        'font_size': BPM_font_size,
+                        'font_path': BPM_font_path
+                    },
+                    {
+                        'text': nd1_name,
+                        'position': (
+                            int(frame_width*frame_time) // 2 + nd_name_dx_position,
+                            int(frame_height*frame_time) // 2 + nd_dy_position
+                        ),
+                        'font_size': nd_font_size,
+                        'font_path': font_path,
+                        'anchor': 'lm'
                     }
                 ],
                 target_size=(int(frame_width*frame_time), int(frame_height*frame_time))
@@ -920,8 +1073,9 @@ class DisplayWindow:
             random_music1 = random.choice(list(Utils().music_list.values()))
             music2_id = data['music2']
             music2 = Utils().music_list.get(music2_id, random_music1) # 如果找不到对应曲目，就用随机曲
-            music2_name, title_font_size = self.get_adaptive_font_size(music2['Name'], font_path, 580, 56, initial_size=40, min_size=30)
-            composer2_name, composer_font_size = self.get_adaptive_font_size(music2['Composer'], font_path, 580, 44, initial_size=20, min_size=15)
+            music2_name, title_font_size = self.get_adaptive_font_size(music2['Name'], font_path, text_max_width, 56, initial_size=40, min_size=30)
+            composer2_name, composer_font_size = self.get_adaptive_font_size(music2['Composer'], font_path, text_max_width, 44, initial_size=20, min_size=15)
+            nd2_name, nd_font_size = self.get_adaptive_font_size(music2['ND'], font_path, nd_max_width, 24, initial_size=_nd_font_size, min_size=_nd_font_size)
             jacket2_path = music2['Jacket']
 
             crop_region = (level_left, level_top, level_right, level_bottom)
@@ -945,6 +1099,16 @@ class DisplayWindow:
                     'size': (int(level_width*level_time), int(level_height*level_time)),
                     'alpha': 1.0,
                     'crop': crop_region
+                },
+                {
+                    'path': level_image_path,
+                    'position': (
+                        int(frame_width*frame_time) // 2 + nd_dx_position,
+                        int(frame_height*frame_time) // 2 + nd_dy_position
+                    ),
+                    'size': (int((nd_right - nd_left)*level_time), int((nd_bottom - nd_top)*level_time)),
+                    'alpha': 1.0,
+                    'crop': (nd_left, nd_top, nd_right, nd_bottom)
                 }
             ]
 
@@ -1020,6 +1184,25 @@ class DisplayWindow:
                             int(frame_height*frame_time) // 2 + composer_dy_position
                         ),
                         'font_size': composer_font_size,
+                    },
+                    {
+                        'text': str(round(float(music2['BPM']))),
+                        'position': (
+                            int(frame_width*frame_time) // 2 + BPM_dx_position,
+                            int(frame_height*frame_time) // 2 + BPM_dy_position
+                        ),
+                        'font_size': BPM_font_size,
+                        'font_path': BPM_font_path
+                    },
+                    {
+                        'text': nd2_name,
+                        'position': (
+                            int(frame_width*frame_time) // 2 + nd_name_dx_position,
+                            int(frame_height*frame_time) // 2 + nd_dy_position
+                        ),
+                        'font_size': nd_font_size,
+                        'font_path': font_path,
+                        'anchor': 'lm'
                     }
                 ],
                 target_size=(int(frame_width*frame_time), int(frame_height*frame_time))
@@ -1345,7 +1528,7 @@ class DisplayWindow:
     def get_adaptive_font_size(self, text, font_path, max_width, max_height, initial_size, min_size): # 新版，用这个
         """计算自适应字体大小，确保文本不超过指定宽度和高度"""
         size = initial_size
-        if font_path == f"{Utils().get_project_root()}/assets/SEGA_MARUGOTHICDB.ttf":
+        if font_path == f"{Utils().get_project_root()}/assets/fonts/SEGA_MARUGOTHICDB.ttf":
             font = self.preloaded_fonts.get(size, None)
         if not font:
             font = ImageFont.truetype(font_path, size)
@@ -1500,6 +1683,8 @@ class DisplayWindow:
                 if anchor == 'center':
                     x -= overlay_width // 2
                     y -= overlay_height // 2
+                elif anchor == 'lm':
+                    y -= overlay_height // 2
                 elif anchor == 'rb':
                     x -= overlay_width
                     y -= overlay_height
@@ -1526,7 +1711,14 @@ class DisplayWindow:
                 color = text_info.get('color', (0, 0, 0))
                 alpha = text_info.get('alpha', 1.0)
                 # 加载字体
-                font = self.preloaded_fonts.get(font_size, ImageFont.load_default())
+                if text_info.get('font_path'):
+                    font_path = text_info.get('font_path')
+                    if font_path == f"{Utils().get_project_root()}/assets/fonts/Helvetica Bold.ttf" and font_size == 24:
+                        font = self.preloaded_BPM_font
+                    else:
+                        font = ImageFont.truetype(font_path, font_size)
+                else:
+                    font = self.preloaded_fonts.get(font_size, ImageFont.load_default())
                 
                 if not text:
                     continue
@@ -1537,10 +1729,12 @@ class DisplayWindow:
                     color = color + (int(255 * alpha),)
                 else:
                     color = color + (255,)
+
+                anchor = text_info.get('anchor', 'mm')
                 
                 # 绘制文字
                 draw = ImageDraw.Draw(final_img)
-                draw.text(position, text, font=font, fill=color, anchor="mm")
+                draw.text(position, text, font=font, fill=color, anchor=anchor)
             
             # 转换为Tkinter图片
             if output_img:
@@ -1552,9 +1746,9 @@ class DisplayWindow:
             print(f"图片叠加失败: {e}")
             return None
             
-    def _display_background(self, width, height):
+    def _display_background(self, bg_img):
         """显示背景图片"""
-        tk_bg = self.preloaded.get('background')
+        tk_bg = self.preloaded.get(bg_img)
         if tk_bg:
             self.canvas.create_image(0, 0, image=tk_bg, anchor=tk.NW)
             self.image_references.append(tk_bg)

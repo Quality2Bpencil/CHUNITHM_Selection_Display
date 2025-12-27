@@ -140,7 +140,7 @@ class GUIWindow:
         """随机选曲"""
         self.controller.random_music()
         self.update_status("正在随机歌曲...")
-        self.current_label.config(text="当前图片: 选曲界面")
+        self.current_label.config(text="当前图片: 随机选曲界面")
         
     def update_1p_song(self, event=None):
         """实时更新1P选曲显示文本"""

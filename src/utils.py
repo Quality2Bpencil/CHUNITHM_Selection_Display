@@ -18,7 +18,7 @@ class Utils:
 
     @staticmethod
     def import_music_list():
-        df = pd.read_excel('assets/all_music_list.xlsx')
+        df = pd.read_excel('assets/music_data/MusicData.xlsx')
         music_list = {}
 
         for index, row in df.iterrows():
@@ -29,6 +29,13 @@ class Utils:
                 'Jacket': f'assets/picture/jackets/CHU_UI_Jacket_{str(row['ID']).zfill(4)}.dds'
             }
             music_list[str(row['ID'])] = music_infomation
+
+        df = pd.read_excel('assets/music_data/MusicData_BPM_ND.xlsx')
+
+        for index, row in df.iterrows():
+            if str(row['ID']) in music_list:
+                music_list[str(row['ID'])]['BPM'] = row['BPM']
+                music_list[str(row['ID'])]['ND'] = row['MASTER谱师']
 
         return music_list
 
