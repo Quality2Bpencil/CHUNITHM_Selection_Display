@@ -68,43 +68,88 @@ class GUIWindow:
         # 1P队伍和队员名
         frame_1p = ttk.Frame(input_frame)
         frame_1p.pack(fill=tk.X, pady=(0, 10))
-        ttk.Label(frame_1p, text="1P队伍名:").pack(side=tk.LEFT)
+        ttk.Label(frame_1p, text="1P队伍名: ").pack(side=tk.LEFT)
         self.entry_1p_team = ttk.Entry(frame_1p, width=30)
         self.entry_1p_team.pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Label(frame_1p, text="1P队员名:").pack(side=tk.LEFT)
+        ttk.Label(frame_1p, text="1P队员名: ").pack(side=tk.LEFT)
         self.entry_1p_player = ttk.Entry(frame_1p, width=30)
         self.entry_1p_player.pack(side=tk.LEFT)
         
+        """
         # 1P选曲
         song_frame_1p = ttk.Frame(input_frame)
         song_frame_1p.pack(fill=tk.X, pady=(0, 10))
-        ttk.Label(song_frame_1p, text="1P选曲:").pack(side=tk.LEFT)
+        ttk.Label(song_frame_1p, text="1P选曲: ").pack(side=tk.LEFT)
         self.entry_1p_song = ttk.Entry(song_frame_1p, width=10)
         self.entry_1p_song.pack(side=tk.LEFT, padx=(0, 10))
         self.entry_1p_song.bind("<KeyRelease>", self.update_1p_song)
         self.label_1p_song = ttk.Label(song_frame_1p, text="请输入曲目ID", font=("Arial", 10))
         self.label_1p_song.pack(side=tk.LEFT)
+        """
+
+        # 2P选曲
+        song_frame_1p = ttk.Frame(input_frame)
+        song_frame_1p.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(song_frame_1p, text="1P选曲: ").pack(side=tk.LEFT)
+        self.entry_1p_song = ttk.Combobox(song_frame_1p, 
+                                         values=Utils().searchable_music_list,
+                                         state="normal",  # 可输入
+                                         width=50)
+        self.entry_1p_song.pack(side=tk.LEFT, padx=(0, 10))
+        self.entry_1p_song.bind("<KeyRelease>", self.search_music)
         
         # 2P队伍和队员名
         frame_2p = ttk.Frame(input_frame)
         frame_2p.pack(fill=tk.X, pady=(0, 10))
-        ttk.Label(frame_2p, text="2P队伍名:").pack(side=tk.LEFT)
+        ttk.Label(frame_2p, text="2P队伍名: ").pack(side=tk.LEFT)
         self.entry_2p_team = ttk.Entry(frame_2p, width=30)
         self.entry_2p_team.pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Label(frame_2p, text="2P队员名:").pack(side=tk.LEFT)
+        ttk.Label(frame_2p, text="2P队员名: ").pack(side=tk.LEFT)
         self.entry_2p_player = ttk.Entry(frame_2p, width=30)
         self.entry_2p_player.pack(side=tk.LEFT)
         
+        """
         # 2P选曲
         song_frame_2p = ttk.Frame(input_frame)
         song_frame_2p.pack(fill=tk.X, pady=(0, 10))
-        ttk.Label(song_frame_2p, text="2P选曲:").pack(side=tk.LEFT)
+        ttk.Label(song_frame_2p, text="2P选曲: ").pack(side=tk.LEFT)
         self.entry_2p_song = ttk.Entry(song_frame_2p, width=10)
         self.entry_2p_song.pack(side=tk.LEFT, padx=(0, 10))
         self.entry_2p_song.bind("<KeyRelease>", self.update_2p_song)
         self.label_2p_song = ttk.Label(song_frame_2p, text="请输入曲目ID", font=("Arial", 10))
         self.label_2p_song.pack(side=tk.LEFT)
-        
+        """
+
+        # 2P选曲
+        song_frame_2p = ttk.Frame(input_frame)
+        song_frame_2p.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(song_frame_2p, text="2P选曲: ").pack(side=tk.LEFT)
+        self.entry_2p_song = ttk.Combobox(song_frame_2p, 
+                                         values=Utils().searchable_music_list,
+                                         state="normal",  # 可输入
+                                         width=50)
+        self.entry_2p_song.pack(side=tk.LEFT, padx=(0, 10))
+        self.entry_2p_song.bind("<KeyRelease>", self.search_music)
+
+        # 随机曲
+        random_const_frame = ttk.Frame(input_frame)
+        random_const_frame.pack(fill=tk.X, pady=(10, 10))
+        # 随机曲曲库
+        tk.Label(random_const_frame, text="随机曲曲库: ").pack(side=tk.LEFT)
+        self.entry_library = ttk.Combobox(random_const_frame,
+                                        values=["全曲库"],
+                                        state="readonly",  # 只读，不能输入
+                                        width=20)
+        self.entry_library.pack(side=tk.LEFT, padx=(0, 50))
+        self.entry_library.set("全曲库")
+        # 随机曲定数范围
+        ttk.Label(random_const_frame, text="随机曲定数范围: ").pack(side=tk.LEFT)
+        self.entry_random_const_min = ttk.Entry(random_const_frame, width=10)
+        self.entry_random_const_min.pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(random_const_frame, text="~").pack(side=tk.LEFT)
+        self.entry_random_const_max = ttk.Entry(random_const_frame, width=10)
+        self.entry_random_const_max.pack(side=tk.LEFT, padx=(10, 10))
+
         # 状态显示区域
         status_frame = ttk.LabelFrame(main_frame, text="状态信息", padding="15")
         status_frame.pack(fill=tk.BOTH, expand=True)
@@ -123,6 +168,28 @@ class GUIWindow:
             font=("Arial", 10)
         )
         self.current_label.pack(anchor=tk.W, pady=(10, 0))
+
+    def search_music(self, event):
+        """搜索功能"""
+        combo = event.widget
+        value = combo.get()
+        #print(f"搜索内容: {value}")
+        
+        data = [None]
+        if value == '':
+            combo['values'] = Utils().searchable_music_list
+        else:
+            data = []
+            for item in Utils().searchable_music_list:
+                if value.lower() in item.lower():
+                    data.append(item)
+            
+            combo['values'] = data
+
+        current_index = combo.current()
+        if current_index == -1 and data:
+            if event.keysym == 'Return':
+                combo.event_generate('<Down>')
         
     def clear_screen(self):
         """清空屏幕"""

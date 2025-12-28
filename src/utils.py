@@ -16,6 +16,7 @@ class Utils:
     def __init__(self):
         self.base_path = self.get_base_path()
         self.music_list = self.import_music_list()
+        self.searchable_music_list = [f"{key} - {info['Name']}" for key, info in self.music_list.items()]
         
     @staticmethod
     def get_base_path():

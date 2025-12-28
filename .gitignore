@@ -3,3 +3,4 @@ dist/
 *spec
 src/__pycache__/
 *.pyc
+test/

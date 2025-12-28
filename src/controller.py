@@ -28,10 +28,10 @@ class Controller:
             data = {
                 'team1': self.gui_window.entry_1p_team.get() or "1P队伍", # 如果team1对应的字符串为空，就改为“1P队伍”
                 'player1': self.gui_window.entry_1p_player.get() or "1P玩家",
-                'music1': self.gui_window.entry_1p_song.get(),
+                'music1': self.gui_window.entry_1p_song.get() or "music1",
                 'team2': self.gui_window.entry_2p_team.get() or "2P队伍",
                 'player2': self.gui_window.entry_2p_player.get() or "2P玩家",
-                'music2': self.gui_window.entry_2p_song.get()
+                'music2': self.gui_window.entry_2p_song.get() or "music2"
             }
             self._send_command("DISPLAY_SELECTION", data)
         
@@ -40,7 +40,12 @@ class Controller:
         self._send_command("DISPLAY_SELECTION", {})
 
     def random_music(self):
-        self._send_command("RANDOM_MUSIC", [])
+        data = {
+            'library': self.gui_window.entry_library.get() or '全曲库',
+            'min_const': self.gui_window.entry_random_const_min.get() or '0.0',
+            'max_const': self.gui_window.entry_random_const_max.get() or '16.0',
+        }
+        self._send_command("RANDOM_MUSIC", data)
         
     def update_display(self, image_path):
         """更新显示窗口"""

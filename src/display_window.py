@@ -57,6 +57,11 @@ class DisplayWindow:
 
     def setup_ui(self):
         """设置用户界面"""
+        self.root.geometry("1920x1080")
+    
+        # 禁止调整窗口大小（宽度和高度都不可调整）
+        self.root.resizable(False, False)
+
         # 主框架
         main_frame = ttk.Frame(self.root)
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -83,10 +88,27 @@ class DisplayWindow:
             print(f"显示选曲错误: {e}")
 
     def random_music(self, data):
+        min_const, max_const = 0.0, 16.0
+        try:
+            min_const = float(data['min_const'])
+        except (ValueError, TypeError):
+            pass
+        try:
+            max_const = float(data['max_const'])
+        except (ValueError, TypeError):
+            pass
+        if min_const > max_const:
+            min_const, max_const = max_const, min_const
+
+        unfiltered_music = Utils().music_list
+        filtered_music = filtered_music = [music for music in unfiltered_music.values() if music.get('Const', 0.0) >= min_const and music.get('Const', 16.0) <= max_const]
+        if filtered_music == []:
+            filtered_music = list(Utils().music_list.values())
+
         random_music_number = 35 + random.randint(-5, 5)
         random_music_list = []
         for index in range(random_music_number):
-            music = random.choice(list(Utils().music_list.values()))
+            music = random.choice(filtered_music)
             random_music_list.append(music)
         #print(random_music_list)
         self.scroller(random_music_number, random_music_list)
@@ -930,7 +952,7 @@ class DisplayWindow:
             
             # 左侧曲目
             random_music1 = random.choice(list(Utils().music_list.values()))
-            music1_id = data['music1']
+            music1_id = data['music1'].split()[0]
             music1 = Utils().music_list.get(music1_id, random_music1) # 如果找不到对应曲目，就用随机曲
             music1_name, title_font_size = self.get_adaptive_font_size(music1['Name'], font_path, text_max_width, 56, initial_size=40, min_size=30)
             composer1_name, composer_font_size = self.get_adaptive_font_size(music1['Composer'], font_path, text_max_width, 44, initial_size=20, min_size=15)
@@ -1077,7 +1099,7 @@ class DisplayWindow:
 
             # 右侧曲目
             random_music1 = random.choice(list(Utils().music_list.values()))
-            music2_id = data['music2']
+            music2_id = data['music2'].split()[0]
             music2 = Utils().music_list.get(music2_id, random_music1) # 如果找不到对应曲目，就用随机曲
             music2_name, title_font_size = self.get_adaptive_font_size(music2['Name'], font_path, text_max_width, 56, initial_size=40, min_size=30)
             composer2_name, composer_font_size = self.get_adaptive_font_size(music2['Composer'], font_path, text_max_width, 44, initial_size=20, min_size=15)
