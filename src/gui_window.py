@@ -1,6 +1,7 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 from utils import Utils
+import pandas as pd
 import os
 
 class GUIWindow:
@@ -34,7 +35,7 @@ class GUIWindow:
         control_frame = ttk.LabelFrame(main_frame, text="播放控制", padding="15")
         control_frame.pack(fill=tk.X, pady=(0, 20))
         
-        # 按钮1
+        # 清空屏幕按钮
         self.btn1 = ttk.Button(
             control_frame,
             text="清空屏幕",
@@ -43,7 +44,7 @@ class GUIWindow:
         )
         self.btn1.pack(pady=10)
         
-        # 按钮2
+        # 显示选曲按钮
         self.btn2 = ttk.Button(
             control_frame,
             text="显示选曲",
@@ -52,7 +53,7 @@ class GUIWindow:
         )
         self.btn2.pack(pady=10)
 
-        # 按钮3
+        # 随机歌曲按钮
         self.btn3 = ttk.Button(
             control_frame,
             text="随机歌曲",
@@ -62,7 +63,7 @@ class GUIWindow:
         self.btn3.pack(pady=10)
         
         # 文本输入区域
-        input_frame = ttk.LabelFrame(main_frame, text="文本输入", padding="15")
+        input_frame = ttk.LabelFrame(main_frame, text="指定选曲", padding="15")
         input_frame.pack(fill=tk.X, pady=(0, 20))
         
         # 1P队伍和队员名
@@ -131,24 +132,46 @@ class GUIWindow:
         self.entry_2p_song.pack(side=tk.LEFT, padx=(0, 10))
         self.entry_2p_song.bind("<KeyRelease>", self.search_music)
 
+        # 随机选曲区域
+        random_frame = ttk.LabelFrame(main_frame, text="随机选曲", padding="15")
+        random_frame.pack(fill=tk.X, pady=(0, 20))
+
         # 随机曲
-        random_const_frame = ttk.Frame(input_frame)
-        random_const_frame.pack(fill=tk.X, pady=(10, 10))
+        self.random_const_frame = ttk.Frame(random_frame)
+        self.random_const_frame.pack(fill=tk.X, pady=(0, 20))
         # 随机曲曲库
-        tk.Label(random_const_frame, text="随机曲曲库: ").pack(side=tk.LEFT)
-        self.entry_library = ttk.Combobox(random_const_frame,
-                                        values=["全曲库"],
+        tk.Label(self.random_const_frame, text="随机曲曲库: ").pack(side=tk.LEFT)
+        self.entry_library = ttk.Combobox(self.random_const_frame,
+                                        values=["全曲库"] + list(Utils().users_music_list.keys()),
                                         state="readonly",  # 只读，不能输入
                                         width=20)
         self.entry_library.pack(side=tk.LEFT, padx=(0, 50))
         self.entry_library.set("全曲库")
         # 随机曲定数范围
-        ttk.Label(random_const_frame, text="随机曲定数范围: ").pack(side=tk.LEFT)
-        self.entry_random_const_min = ttk.Entry(random_const_frame, width=10)
+        ttk.Label(self.random_const_frame, text="随机曲定数范围: ").pack(side=tk.LEFT)
+        self.entry_random_const_min = ttk.Entry(self.random_const_frame, width=10)
         self.entry_random_const_min.pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Label(random_const_frame, text="~").pack(side=tk.LEFT)
-        self.entry_random_const_max = ttk.Entry(random_const_frame, width=10)
+        ttk.Label(self.random_const_frame, text="~").pack(side=tk.LEFT)
+        self.entry_random_const_max = ttk.Entry(self.random_const_frame, width=10)
         self.entry_random_const_max.pack(side=tk.LEFT, padx=(10, 10))
+
+        # 导入Excel曲库按钮
+        self.btn1 = ttk.Button(
+            random_frame,
+            text="导入Excel曲库",
+            command=self.import_excel,
+            width=20
+        )
+        self.btn1.pack(side=tk.LEFT, padx=(90,0))
+        
+        # 导入TXT曲库按钮
+        self.btn2 = ttk.Button(
+            random_frame,
+            text="导入TXT曲库",
+            command=self.import_txt,
+            width=20
+        )
+        self.btn2.pack(side=tk.LEFT, padx=(100,0))
 
         # 状态显示区域
         status_frame = ttk.LabelFrame(main_frame, text="状态信息", padding="15")
@@ -230,6 +253,68 @@ class GUIWindow:
             self.label_2p_song.config(text=f"曲目: {music['Name']} (难度: {music['Const']})")
         else:
             self.label_2p_song.config(text="找不到对应曲目！")
+
+    def import_excel(self):
+        """导入Excel文件"""
+        file_path = filedialog.askopenfilename(
+            title="选择Excel文件",
+            filetypes=[("Excel文件", "*.xlsx *.xls"), ("所有文件", "*.*")]
+        )
+        
+        if file_path:
+            try:
+                filename = os.path.splitext(os.path.basename(file_path))[0]
+                df = pd.read_excel(file_path, header=None)
+                id_list = []
+                util = Utils()
+                for i in range(len(df)):
+                    for j in range (len(df.columns)):
+                        content = str(df.iloc[i, j]).strip()
+                        for key, value in util.music_list.items():
+                            if content == key or content == value['Name']:
+                                id_list.append(key)
+                id_list = list(dict.fromkeys(id_list))
+                if id_list == []:
+                    messagebox.showerror("导入失败", "你的Excel文档里找不到曲目")
+                    return
+                music_list = {music_id: util.music_list[music_id] for music_id in id_list}
+                util.add_music_list(filename, music_list)
+                self.entry_library['values']=["全曲库"] + list(Utils().users_music_list.keys())
+                messagebox.showinfo("导入成功", f"你成功导入了名为“{filename}”的曲库")
+                
+            except Exception as e:
+                messagebox.showerror("导入错误", f"导入Excel文件失败:\n{str(e)}")
+    
+    def import_txt(self):
+        """导入TXT文件"""
+        file_path = filedialog.askopenfilename(
+            title="选择TXT文件",
+            filetypes=[("Excel文件", "*.txt"), ("所有文件", "*.*")]
+        )
+        
+        if file_path:
+            try:
+                id_list = []
+                util = Utils()
+                filename = os.path.splitext(os.path.basename(file_path))[0]
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    lines = file.readlines()
+                    for line in lines:
+                        content = line.strip()
+                        for key, value in util.music_list.items():
+                            if content == key or content == value['Name']:
+                                id_list.append(key)
+                id_list = list(dict.fromkeys(id_list))
+                if id_list == []:
+                    messagebox.showerror("导入失败", "你的TXT文档里找不到曲目")
+                    return
+                music_list = {music_id: util.music_list[music_id] for music_id in id_list}
+                util.add_music_list(filename, music_list)
+                self.entry_library['values']=["全曲库"] + list(Utils().users_music_list.keys())
+                messagebox.showinfo("导入成功", f"你成功导入了名为“{filename}”的曲库")
+                
+            except Exception as e:
+                messagebox.showerror("导入错误", f"导入TXT文件失败:\n{str(e)}")
         
     def update_status(self, message):
         """更新状态信息"""

@@ -17,6 +17,7 @@ class Utils:
         self.base_path = self.get_base_path()
         self.music_list = self.import_music_list()
         self.searchable_music_list = [f"{key} - {info['Name']}" for key, info in self.music_list.items()]
+        self.users_music_list = {}
         
     @staticmethod
     def get_base_path():
@@ -48,6 +49,9 @@ class Utils:
                 music_list[str(row['ID'])]['ND'] = row['MASTER谱师']
 
         return music_list
+    
+    def add_music_list(self, list_name, list_value):
+        self.users_music_list[list_name] = list_value
             
 class CurrentProcess(Enum):
     NONE = 0

@@ -100,7 +100,10 @@ class DisplayWindow:
         if min_const > max_const:
             min_const, max_const = max_const, min_const
 
-        unfiltered_music = Utils().music_list
+        if data['library'] == '全曲库':
+            unfiltered_music = Utils().music_list
+        else:
+            unfiltered_music = Utils().users_music_list.get(data['library'], '全曲库')
         filtered_music = filtered_music = [music for music in unfiltered_music.values() if music.get('Const', 0.0) >= min_const and music.get('Const', 16.0) <= max_const]
         if filtered_music == []:
             filtered_music = list(Utils().music_list.values())
