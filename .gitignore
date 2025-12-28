@@ -1,4 +1,5 @@
 build/
+build_env/
 dist/
 *spec
 src/__pycache__/

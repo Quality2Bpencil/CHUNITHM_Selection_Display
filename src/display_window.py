@@ -1,9 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, font
 from PIL import Image, ImageTk, ImageDraw, ImageFont
-import io
 from utils import Utils, CurrentProcess
-import threading
 import os
 import random
 
