@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, font
 from PIL import Image, ImageTk, ImageDraw, ImageFont
-from wand.image import Image as WandImage
 import io
 from utils import Utils, CurrentProcess
 import threading
@@ -1579,18 +1578,9 @@ class DisplayWindow:
     def _load_image(self, path, width, height, crop=None, alpha=1.0): # 好像没啥用，感觉可以删了
         """加载并调整图片大小，返回Tkinter图片对象，支持裁剪和透明度"""
         try:
-            if path.lower().endswith('.dds'):
-                # 处理DDS格式，使用Wand转换为PIL，支持裁剪
-                with WandImage(filename=path) as wand_img:
-                    if crop:
-                        wand_img.crop(crop[0], crop[1], crop[2], crop[3])  # left, top, right, bottom
-                    blob = wand_img.make_blob('png')
-                    pil_image = Image.open(io.BytesIO(blob))
-            else:
-                # 处理其他格式
-                pil_image = Image.open(path)
-                if crop:
-                    pil_image = pil_image.crop(crop)
+            pil_image = Image.open(path)
+            if crop:
+                pil_image = pil_image.crop(crop)
             
             if width > 1 and height > 1:
                 # 计算缩放比例
