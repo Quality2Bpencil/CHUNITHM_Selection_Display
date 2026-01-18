@@ -1,4 +1,4 @@
-# CHUNITHM Selection Display (ver 0.4-alpha)
+# CHUNITHM Selection Display (ver 0.5-alpha)
 
 ## 简介
 它可以在中二节奏比赛中展示玩家的选曲，也可以随机选择一首乐曲并展示。
@@ -34,7 +34,7 @@ It can display the players' music selections in a CHUNITHM match. It can also pi
 ---
 
 ## To do list
-- 不同大小窗口的适配
+- 新增成绩显示功能
 - 随机选曲不能打断随机选曲
 - “夏宵”曲师显示会出现换行
 - 498 D✪N’T ST✪P R✪CKIN’ 曲名显示错误（字体里没✪）

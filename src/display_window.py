@@ -8,7 +8,7 @@ import random
 class DisplayWindow:
     """独立的图片显示窗口，负责显示图片和选曲界面"""
     
-    def __init__(self, controller):
+    def __init__(self, controller, window_size=None):
         self.controller = controller
         self.root = tk.Toplevel()
         self.root.title("输出窗口")
@@ -19,7 +19,11 @@ class DisplayWindow:
         # 图片缓存，防止垃圾回收
         self.image_references = []
         
-        self.setup_ui()
+        # 初始化缩放系数（相对于1920x1080）
+        self.scale_x = 1.0
+        self.scale_y = 1.0
+        
+        self.setup_ui(window_size)
 
         self.preloaded = self.preload_images()
         self.preloaded_fonts, self.preloaded_BPM_font = self.preload_fonts()
@@ -27,16 +31,46 @@ class DisplayWindow:
         self._display_background('background')
         self.current_process = CurrentProcess.NONE
         
+    def _scale(self, value, axis='x'):
+        """应用缩放系数
+        
+        Args:
+            value: 原始值
+            axis: 轴向 ('x' 或 'y')
+        
+        Returns:
+            缩放后的值
+        """
+        if axis == 'x':
+            return int(value * self.scale_x)
+        else:  # axis == 'y'
+            return int(value * self.scale_y)
+    
+    def _scale_font_size(self, font_size):
+        """缩放字体大小，使用平均缩放系数"""
+        avg_scale = (self.scale_x + self.scale_y) / 2
+        return max(1, int(font_size * avg_scale))
+    
+    def _scale_coord(self, x, y):
+        """缩放坐标"""
+        return self._scale(x, 'x'), self._scale(y, 'y')
+    
+    def _scale_size(self, width, height):
+        """缩放大小"""
+        return self._scale(width, 'x'), self._scale(height, 'y')
+    
     def preload_images(self):
         """预加载必要的图片资源"""
         # 这里可以预加载一些常用的图片资源，提升显示速度
         preloaded = {}
         background_path = Utils().resource_path("assets/picture/bg.png")
+        width = 1920 * self.scale_x
+        height = 1080 * self.scale_y
         if os.path.exists(background_path):
-            preloaded['background'] = self._load_image(background_path, 1920, 1080)
+            preloaded['background'] = self._load_image(background_path, width, height)
         background_path = Utils().resource_path("assets/picture/lv_bg.png")
         if os.path.exists(background_path):
-            preloaded['lv_background'] = self._load_image(background_path, 1920, 1080)
+            preloaded['lv_background'] = self._load_image(background_path, width, height)
         preloaded[Utils().resource_path("assets/picture/frame.png")] = Image.open(Utils().resource_path("assets/picture/frame.png")).convert('RGBA')
         preloaded[Utils().resource_path("assets/picture/levels.dds")] = Image.open(Utils().resource_path("assets/picture/levels.dds")).convert('RGBA')
         return preloaded
@@ -46,16 +80,25 @@ class DisplayWindow:
         preloaded_fonts = {}
         font_path = Utils().resource_path("assets/fonts/SEGA_MARUGOTHICDB.ttf")
         if os.path.exists(font_path):
-            for size in range(10, 61):
+            for size in range(3, 61):
                 preloaded_fonts[size] = ImageFont.truetype(font_path, size)
         BPM_font_path = Utils().resource_path("assets/fonts/Helvetica Bold.ttf")
         preloaded_BPM_font = ImageFont.truetype(BPM_font_path, 24)
         return preloaded_fonts, preloaded_BPM_font
 
-    def setup_ui(self):
+    def setup_ui(self, window_size=None):
         """设置用户界面"""
-        self.root.geometry("1920x1080")
-    
+        # 使用传入的窗口大小，或默认为1920x1080
+        if window_size is None:
+            window_size = (1920, 1080)
+        
+        width, height = window_size
+        self.root.geometry(f"{width}x{height}")
+        
+        # 计算缩放系数（相对于1920x1080的默认大小）
+        self.scale_x = width / 1920.0
+        self.scale_y = height / 1080.0
+        
         # 禁止调整窗口大小（宽度和高度都不可调整）
         self.root.resizable(False, False)
 
@@ -67,11 +110,11 @@ class DisplayWindow:
         display_frame = ttk.Frame(main_frame, relief=tk.SUNKEN, borderwidth=2)
         display_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Canvas用于显示图片，固定大小1920x1080
+        # Canvas用于显示图片，根据窗口大小调整
         self.canvas = tk.Canvas(
             display_frame,
-            width=1920,
-            height=1080,
+            width=width - 20,
+            height=height - 20,
             bg="black",
             highlightthickness=0
         )
@@ -118,8 +161,8 @@ class DisplayWindow:
         self.canvas.delete("all")
         self.image_references.clear()
         
-        canvas_width = 1920
-        canvas_height = 1080
+        canvas_width = int(self.canvas.winfo_width())
+        canvas_height = int(self.canvas.winfo_height())
         
         # 显示背景
         self._display_background('lv_background')
@@ -127,9 +170,9 @@ class DisplayWindow:
         #标题
         self.canvas.create_text(
                 canvas_width // 2,
-                130,
+                self._scale(130, 'y'),
                 text='随机选曲',
-                font=("Microsoft YaHei", 50, "bold"),
+                font=("Microsoft YaHei", self._scale_font_size(50), "bold"),
                 fill="black",
                 anchor=tk.CENTER
             )
@@ -137,21 +180,21 @@ class DisplayWindow:
         image_time = 1.4
 
         #边框图片大小
-        frame_width = 424
-        frame_height = 510
+        frame_width = self._scale(424, 'x')
+        frame_height = self._scale(510, 'y')
         frame_time = image_time
         frame_path = Utils().resource_path("assets/picture/frame.png")
 
         #曲绘图片大小
-        jacket_width = 300
-        jacket_height = 300
+        jacket_width = self._scale(300, 'x')
+        jacket_height = self._scale(300, 'y')
         jacket_time = image_time
-        jacket_dy_position =  100
+        jacket_dy_position = self._scale(100, 'y')
 
-        text_max_width = 560
-        nd_max_width = 278
+        text_max_width = self._scale(560, 'x')
+        nd_max_width = self._scale(278, 'x')
 
-        title_y_position = 834
+        title_y_position = self._scale(834, 'y')
 
         #两侧的等级框
         level_image_path = Utils().resource_path("assets/picture/levels.dds")
@@ -159,11 +202,11 @@ class DisplayWindow:
         level_top = 378
         level_right = 79
         level_bottom = 462
-        level_width = level_right - level_left
-        level_height = level_bottom - level_top
+        level_width = self._scale(level_right - level_left, 'x')
+        level_height = self._scale(level_bottom - level_top, 'y')
         level_time = image_time
-        level_dx_position = 223
-        level_dy_position = 160
+        level_dx_position = self._scale(223, 'x')
+        level_dy_position = self._scale(160, 'y')
 
         level_number_path = level_image_path
         level_number_top = 519
@@ -178,28 +221,31 @@ class DisplayWindow:
         level_plus_bottom = 530
         level_plus_left = 411
         level_plus_right = 424
-        level_plus_width = level_plus_right - level_plus_left
-        level_plus_height = level_plus_bottom - level_plus_top
-        level_number_height = level_number_bottom - level_number_top
+        level_plus_width = self._scale(level_plus_right - level_plus_left, 'x')
+        level_plus_height = self._scale(level_plus_bottom - level_plus_top, 'y')
+        level_number_height = self._scale(level_number_bottom - level_number_top, 'y')
         level_number_time = level_time
 
-        level_number_dy_position = 178
+        level_number_dy_position = self._scale(178, 'y')
 
-        title_dy_position = 240
-        composer_dy_position = 288
+        title_dy_position = self._scale(240, 'y')
+        composer_dy_position = self._scale(288, 'y')
 
-        BPM_dx_position = 256
-        BPM_dy_position = 328
-        BPM_font_size = 24
+        BPM_dx_position = self._scale(256, 'x')
+        BPM_dy_position = self._scale(328, 'y')
+        BPM_font_size = self._scale_font_size(24)
 
         nd_top = 491
         nd_left = 193
         nd_right = 311
         nd_bottom = 501
 
-        nd_dx_position = -191
-        nd_dy_position = 328
-        nd_name_dx_position = -102
+        nd_width = self._scale(nd_right - nd_left, 'x')
+        nd_height = self._scale(nd_bottom - nd_top, 'y')
+
+        nd_dx_position = self._scale(-191, 'x')
+        nd_dy_position = self._scale(328, 'y')
+        nd_name_dx_position = self._scale(-102, 'x')
         _nd_font_size = 16
 
         font_path = Utils().resource_path("assets/fonts/SEGA_MARUGOTHICDB.ttf")
@@ -209,7 +255,7 @@ class DisplayWindow:
         music_list_information = []
         for music in random_music_list:
             music_list_information.append({})
-            music_list_information[index]['x_position'] = canvas_width // 2 + 800 * index
+            music_list_information[index]['x_position'] = canvas_width // 2 + self._scale(800 * index, 'x')
 
             if music_list_information[index]['x_position'] - frame_width * frame_time // 2 <= canvas_width:
                 music_name, title_font_size = self.get_adaptive_font_size(music['Name'], font_path, text_max_width, 56, initial_size=40, min_size=30)
@@ -244,7 +290,7 @@ class DisplayWindow:
                             int(frame_width*frame_time) // 2 + nd_dx_position,
                             int(frame_height*frame_time) // 2 + nd_dy_position
                         ),
-                        'size': (int((nd_right - nd_left)*level_time), int((nd_bottom - nd_top)*level_time)),
+                        'size': (int(nd_width*level_time), int(nd_height*level_time)),
                         'alpha': 1.0,
                         'crop': (nd_left, nd_top, nd_right, nd_bottom)
                     }
@@ -259,12 +305,12 @@ class DisplayWindow:
                     number2 = int(level) % 10
                     decimal = level - int(level)
                     crop_region = (level_number_left[number1], level_number_top, level_number_right[number1], level_number_bottom)
-                    level_number_width = level_number_right[number1] - level_number_left[number1]
+                    level_number_width = self._scale(level_number_right[number1] - level_number_left[number1], 'x')
                     img_overlay_list.append(
                         {
                             'path': level_number_path,
                             'position': (
-                                int(frame_width * frame_time) // 2 - level_dx_position - 2 - 20,
+                                int(frame_width * frame_time) // 2 - level_dx_position + self._scale(- 2 - 20, 'x'),
                                 int(frame_height * frame_time) // 2 + level_number_dy_position
                             ),
                             'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
@@ -273,12 +319,12 @@ class DisplayWindow:
                         }
                     )
                     crop_region = (level_number_left[number2], level_number_top, level_number_right[number2], level_number_bottom)
-                    level_number_width = level_number_right[number2] - level_number_left[number2]
+                    level_number_width = self._scale(level_number_right[number2] - level_number_left[number2], 'x')
                     img_overlay_list.append(
                         {
                             'path': level_number_path,
                             'position': (
-                                int(frame_width * frame_time) // 2 - level_dx_position - 2 + 20,
+                                int(frame_width * frame_time) // 2 - level_dx_position + self._scale(- 2 + 20, 'x'),
                                 int(frame_height * frame_time) // 2 + level_number_dy_position
                             ),
                             'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
@@ -292,8 +338,8 @@ class DisplayWindow:
                             {
                                 'path': level_number_path,
                                 'position': (
-                                    int(frame_width * frame_time) // 2 - level_dx_position + 40,
-                                    int(frame_height * frame_time) // 2 + level_number_dy_position - 30
+                                    int(frame_width * frame_time) // 2 - level_dx_position + self._scale(40, 'x'),
+                                    int(frame_height * frame_time) // 2 + level_number_dy_position - self._scale(30, 'y')
                                 ),
                                 'size': (int(level_plus_width*level_time), int(level_plus_height*level_number_time)),
                                 'alpha': 1.0,
@@ -346,7 +392,7 @@ class DisplayWindow:
                 )
                 music_list_information[index]['box'] = self.canvas.create_image(
                     music_list_information[index]['x_position'],
-                    canvas_height // 2 + 50,
+                    canvas_height // 2 + self._scale(50, 'y'),
                     image=tk_box,
                     anchor=tk.CENTER
                 )
@@ -514,7 +560,7 @@ class DisplayWindow:
         speed = 0.0
         acceleration = 0.5
         deceleration = 0.7
-        total_distance = (random_music_number - 2) * 800
+        total_distance = self._scale((random_music_number - 2) * 800, 'x')
 
         def move():
             if self.current_process != CurrentProcess.RANDOM_MUSIC:
@@ -534,7 +580,7 @@ class DisplayWindow:
                 music_list_information[index]['x_position'] -= int(speed)
 
                 if music_list_information[index]['box']:
-                    self.canvas.coords(music_list_information[index]['box'], music_list_information[index]['x_position'], canvas_height // 2 + 50)
+                    self.canvas.coords(music_list_information[index]['box'], music_list_information[index]['x_position'], canvas_height // 2 + self._scale(50, 'y'))
                     if music_list_information[index]['x_position'] + frame_width * frame_time // 2 < 0:
                         self.canvas.delete(music_list_information[index]['box'])
                         music_list_information[index]['box'] = None
@@ -573,7 +619,7 @@ class DisplayWindow:
                                 int(frame_width*frame_time) // 2 + nd_dx_position,
                                 int(frame_height*frame_time) // 2 + nd_dy_position
                             ),
-                            'size': (int((nd_right - nd_left)*level_time), int((nd_bottom - nd_top)*level_time)),
+                            'size': (int(nd_width*level_time), int(nd_height*level_time)),
                             'alpha': 1.0,
                             'crop': (nd_left, nd_top, nd_right, nd_bottom)
                         }
@@ -588,12 +634,12 @@ class DisplayWindow:
                         number2 = int(level) % 10
                         decimal = level - int(level)
                         crop_region = (level_number_left[number1], level_number_top, level_number_right[number1], level_number_bottom)
-                        level_number_width = level_number_right[number1] - level_number_left[number1]
+                        level_number_width = self._scale(level_number_right[number1] - level_number_left[number1], 'x')
                         img_overlay_list.append(
                             {
                                 'path': level_number_path,
                                 'position': (
-                                    int(frame_width * frame_time) // 2 - level_dx_position - 2 - 20,
+                                    int(frame_width * frame_time) // 2 - level_dx_position + self._scale(- 2 - 20, 'x'),
                                     int(frame_height * frame_time) // 2 + level_number_dy_position
                                 ),
                                 'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
@@ -602,12 +648,12 @@ class DisplayWindow:
                             }
                         )
                         crop_region = (level_number_left[number2], level_number_top, level_number_right[number2], level_number_bottom)
-                        level_number_width = level_number_right[number2] - level_number_left[number2]
+                        level_number_width = self._scale(level_number_right[number2] - level_number_left[number2], 'x')
                         img_overlay_list.append(
                             {
                                 'path': level_number_path,
                                 'position': (
-                                    int(frame_width * frame_time) // 2 - level_dx_position - 2 + 20,
+                                    int(frame_width * frame_time) // 2 - level_dx_position + self._scale(- 2 + 20, 'x'),
                                     int(frame_height * frame_time) // 2 + level_number_dy_position
                                 ),
                                 'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
@@ -621,8 +667,8 @@ class DisplayWindow:
                                 {
                                     'path': level_number_path,
                                     'position': (
-                                        int(frame_width * frame_time) // 2 - level_dx_position + 40,
-                                        int(frame_height * frame_time) // 2 + level_number_dy_position - 30
+                                        int(frame_width * frame_time) // 2 - level_dx_position + self._scale(40, 'x'),
+                                        int(frame_height * frame_time) // 2 + level_number_dy_position - self._scale(30, 'y')
                                     ),
                                     'size': (int(level_plus_width*level_time), int(level_plus_height*level_number_time)),
                                     'alpha': 1.0,
@@ -721,7 +767,7 @@ class DisplayWindow:
                         )
                     music_list_information[index]['box'] = self.canvas.create_image(
                         music_list_information[index]['x_position'],
-                        canvas_height // 2 + 50,
+                        canvas_height // 2 + self._scale(50, 'y'),
                         image=tk_box,
                         anchor=tk.CENTER
                     )
@@ -831,8 +877,8 @@ class DisplayWindow:
         self.canvas.delete("all")
         self.image_references.clear()
         
-        canvas_width = self.canvas.winfo_width()
-        canvas_height = self.canvas.winfo_height()
+        canvas_width = int(self.canvas.winfo_width())
+        canvas_height = int(self.canvas.winfo_height())
         
         # 显示背景
         self._display_background('background')
@@ -843,31 +889,31 @@ class DisplayWindow:
             image_time = 1.4
 
             #边框图片大小
-            frame_width = 424
-            frame_height = 510
+            frame_width = self._scale(424, 'x')
+            frame_height = self._scale(510, 'y')
             frame_time = image_time
             frame_path = Utils().resource_path("assets/picture/frame.png")
 
             #曲绘图片大小
-            jacket_width = 300
-            jacket_height = 300
+            jacket_width = self._scale(300, 'x')
+            jacket_height = self._scale(300, 'y')
             jacket_time = image_time
-            jacket_dy_position = 100
+            jacket_dy_position = self._scale(100, 'y')
 
             #文字最大长度
-            text_max_width = 560
-            nd_max_width = 278
+            text_max_width = self._scale(560, 'x')
+            nd_max_width = self._scale(278, 'x')
 
             level_image_path = Utils().resource_path("assets/picture/levels.dds")
             level_left = 4
             level_top = 378
             level_right = 79
             level_bottom = 462
-            level_width = level_right - level_left
-            level_height = level_bottom - level_top
+            level_width = self._scale(level_right - level_left, 'x')
+            level_height = self._scale(level_bottom - level_top, 'y')
             level_time = image_time
-            level_dx_position = 223
-            level_dy_position = 160
+            level_dx_position = self._scale(223, 'x')
+            level_dy_position = self._scale(160, 'y')
 
             level_number_path = level_image_path
             level_number_top = 519
@@ -882,28 +928,31 @@ class DisplayWindow:
             level_plus_bottom = 530
             level_plus_left = 411
             level_plus_right = 424
-            level_plus_width = level_plus_right - level_plus_left
-            level_plus_height = level_plus_bottom - level_plus_top
-            level_number_height = level_number_bottom - level_number_top
+            level_plus_width = self._scale(level_plus_right - level_plus_left, 'x')
+            level_plus_height = self._scale(level_plus_bottom - level_plus_top, 'y')
+            level_number_height = self._scale(level_number_bottom - level_number_top, 'y')
             level_number_time = level_time
 
-            level_number_dy_position = 178
+            level_number_dy_position = self._scale(178, 'y')
 
-            title_dy_position = 240
-            composer_dy_position = 288
+            title_dy_position = self._scale(240, 'y')
+            composer_dy_position = self._scale(288, 'y')
 
-            BPM_dx_position = 256
-            BPM_dy_position = 328
-            BPM_font_size = 24
+            BPM_dx_position = self._scale(256, 'x')
+            BPM_dy_position = self._scale(328, 'y')
+            BPM_font_size = self._scale_font_size(24)
 
             nd_top = 491
             nd_left = 193
             nd_right = 311
             nd_bottom = 501
 
-            nd_dx_position = -191
-            nd_dy_position = 328
-            nd_name_dx_position = -102
+            nd_width = self._scale(nd_right - nd_left, 'x')
+            nd_height = self._scale(nd_bottom - nd_top, 'y')
+
+            nd_dx_position = self._scale(-191, 'x')
+            nd_dy_position = self._scale(328, 'y')
+            nd_name_dx_position = self._scale(-102, 'x')
             _nd_font_size = 16
 
             font_path = Utils().resource_path("assets/fonts/SEGA_MARUGOTHICDB.ttf")
@@ -912,40 +961,40 @@ class DisplayWindow:
             # 队名与选手名
             text = data['team1']
             self.canvas.create_text(
-                canvas_width // 2 - 400,
-                105,
+                canvas_width // 2 - self._scale(400, 'x'),
+                self._scale(105, 'y'),
                 text=text,
-                font=("Microsoft YaHei", 40, "bold"),
+                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
                 fill="black",
                 anchor=tk.CENTER
             )
 
             text = f'{data['player1']} 的自选曲'
             self.canvas.create_text(
-                canvas_width // 2 - 400,
-                175,
+                canvas_width // 2 - self._scale(400, 'x'),
+                self._scale(175, 'y'),
                 text=text,
-                font=("Microsoft YaHei", 40, "bold"),
+                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
                 fill="black",
                 anchor=tk.CENTER
             )
 
             text = data['team2']
             self.canvas.create_text(
-                canvas_width // 2 + 400,
-                105,
+                canvas_width // 2 + self._scale(400, 'x'),
+                self._scale(105, 'y'),
                 text=text,
-                font=("Microsoft YaHei", 40, "bold"),
+                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
                 fill="black",
                 anchor=tk.CENTER
             )
 
             text = f'{data['player2']} 的自选曲'
             self.canvas.create_text(
-                canvas_width // 2 + 400,
-                175,
+                canvas_width // 2 + self._scale(400, 'x'),
+                self._scale(175, 'y'),
                 text=text,
-                font=("Microsoft YaHei", 40, "bold"),
+                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
                 fill="black",
                 anchor=tk.CENTER
             )
@@ -987,7 +1036,7 @@ class DisplayWindow:
                         int(frame_width*frame_time) // 2 + nd_dx_position,
                         int(frame_height*frame_time) // 2 + nd_dy_position
                     ),
-                    'size': (int((nd_right - nd_left)*level_time), int((nd_bottom - nd_top)*level_time)),
+                    'size': (int(nd_width*level_time), int(nd_height*level_time)),
                     'alpha': 1.0,
                     'crop': (nd_left, nd_top, nd_right, nd_bottom)
                 }
@@ -1002,12 +1051,12 @@ class DisplayWindow:
                 number2 = int(level1) % 10
                 decimal = level1 - int(level1)
                 crop_region = (level_number_left[number1], level_number_top, level_number_right[number1], level_number_bottom)
-                level_number_width = level_number_right[number1] - level_number_left[number1]
+                level_number_width = self._scale(level_number_right[number1] - level_number_left[number1], 'x')
                 img_overlay_list1.append(
                     {
                         'path': level_number_path,
                         'position': (
-                            int(frame_width * frame_time) // 2 - level_dx_position - 2 - 20,
+                            int(frame_width * frame_time) // 2 - level_dx_position + self._scale(- 2 - 20, 'x'),
                             int(frame_height * frame_time) // 2 + level_number_dy_position
                         ),
                         'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
@@ -1016,12 +1065,12 @@ class DisplayWindow:
                     }
                 )
                 crop_region = (level_number_left[number2], level_number_top, level_number_right[number2], level_number_bottom)
-                level_number_width = level_number_right[number2] - level_number_left[number2]
+                level_number_width = self._scale(level_number_right[number2] - level_number_left[number2], 'x')
                 img_overlay_list1.append(
                     {
                         'path': level_number_path,
                         'position': (
-                            int(frame_width * frame_time) // 2 - level_dx_position - 2 + 20,
+                            int(frame_width * frame_time) // 2 - level_dx_position + self._scale(- 2 + 20, 'x'),
                             int(frame_height * frame_time) // 2 + level_number_dy_position
                         ),
                         'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
@@ -1035,8 +1084,8 @@ class DisplayWindow:
                         {
                             'path': level_number_path,
                             'position': (
-                                int(frame_width * frame_time) // 2 - level_dx_position + 40,
-                                int(frame_height * frame_time) // 2 + level_number_dy_position - 30
+                                int(frame_width * frame_time) // 2 - level_dx_position + self._scale(40, 'x'),
+                                int(frame_height * frame_time) // 2 + level_number_dy_position + self._scale(-30, 'y')
                             ),
                             'size': (int(level_plus_width*level_time), int(level_plus_height*level_number_time)),
                             'alpha': 1.0,
@@ -1090,8 +1139,8 @@ class DisplayWindow:
             )
             if tk_left_picture:
                 self.canvas.create_image(
-                    canvas_width // 2 - 400,
-                    canvas_height // 2 + 50,
+                    canvas_width // 2 - self._scale(400, 'x'),
+                    canvas_height // 2 + self._scale(50, 'y'),
                     image=tk_left_picture,
                     anchor=tk.CENTER
                 )
@@ -1134,7 +1183,7 @@ class DisplayWindow:
                         int(frame_width*frame_time) // 2 + nd_dx_position,
                         int(frame_height*frame_time) // 2 + nd_dy_position
                     ),
-                    'size': (int((nd_right - nd_left)*level_time), int((nd_bottom - nd_top)*level_time)),
+                    'size': (int(nd_width*level_time), int(nd_height*level_time)),
                     'alpha': 1.0,
                     'crop': (nd_left, nd_top, nd_right, nd_bottom)
                 }
@@ -1149,12 +1198,12 @@ class DisplayWindow:
                 number2 = int(level2) % 10
                 decimal = level2 - int(level2)
                 crop_region = (level_number_left[number1], level_number_top, level_number_right[number1], level_number_bottom)
-                level_number_width = level_number_right[number1] - level_number_left[number1]
+                level_number_width = self._scale(level_number_right[number1] - level_number_left[number1], 'x')
                 img_overlay_list1.append(
                     {
                         'path': level_number_path,
                         'position': (
-                            int(frame_width * frame_time) // 2 - level_dx_position - 2 - 20,
+                            int(frame_width * frame_time) // 2 - level_dx_position + self._scale(- 2 - 20, 'x'),
                             int(frame_height * frame_time) // 2 + level_number_dy_position
                         ),
                         'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
@@ -1163,12 +1212,12 @@ class DisplayWindow:
                     }
                 )
                 crop_region = (level_number_left[number2], level_number_top, level_number_right[number2], level_number_bottom)
-                level_number_width = level_number_right[number2] - level_number_left[number2]
+                level_number_width = self._scale(level_number_right[number2] - level_number_left[number2], 'x')
                 img_overlay_list1.append(
                     {
                         'path': level_number_path,
                         'position': (
-                            int(frame_width * frame_time) // 2 - level_dx_position - 2 + 20,
+                            int(frame_width * frame_time) // 2 - level_dx_position + self._scale(- 2 + 20, 'x'),
                             int(frame_height * frame_time) // 2 + level_number_dy_position
                         ),
                         'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
@@ -1182,8 +1231,8 @@ class DisplayWindow:
                         {
                             'path': level_number_path,
                             'position': (
-                                int(frame_width * frame_time) // 2 - level_dx_position + 40,
-                                int(frame_height * frame_time) // 2 + level_number_dy_position - 30
+                                int(frame_width * frame_time) // 2 - level_dx_position + self._scale(40, 'x'),
+                                int(frame_height * frame_time) // 2 + level_number_dy_position + self._scale(-30, 'y')
                             ),
                             'size': (int(level_plus_width*level_time), int(level_plus_height*level_number_time)),
                             'alpha': 1.0,
@@ -1237,8 +1286,8 @@ class DisplayWindow:
             )
             if tk_right_picture:
                 self.canvas.create_image(
-                    canvas_width // 2 + 400,
-                    canvas_height // 2 + 50,
+                    canvas_width // 2 + self._scale(400, 'x'),
+                    canvas_height // 2 + self._scale(50, 'y'),
                     image=tk_right_picture,
                     anchor=tk.CENTER
                 )
@@ -1438,9 +1487,9 @@ class DisplayWindow:
             level_plus_bottom = 530
             level_plus_left = 411
             level_plus_right = 424
-            level_plus_width = level_plus_right - level_plus_left
-            level_plus_height = level_plus_bottom - level_plus_top
-            level_number_height = level_number_bottom - level_number_top
+            level_plus_width = self._scale(level_plus_right - level_plus_left, 'x')
+            level_plus_height = self._scale(level_plus_bottom - level_plus_top, 'y')
+            level_number_height = self._scale(level_number_bottom - level_number_top, 'y')
             level_number_time = level_time
 
             #左侧等级
@@ -1555,7 +1604,8 @@ class DisplayWindow:
     
     def get_adaptive_font_size(self, text, font_path, max_width, max_height, initial_size, min_size): # 新版，用这个
         """计算自适应字体大小，确保文本不超过指定宽度和高度"""
-        size = initial_size
+        size = int(initial_size * self.scale_x)
+        min_size = int(min_size * self.scale_x)
         if font_path == Utils().resource_path("assets/fonts/SEGA_MARUGOTHICDB.ttf"):
             font = self.preloaded_fonts.get(size, None)
         if not font:
