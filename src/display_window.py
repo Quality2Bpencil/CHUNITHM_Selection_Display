@@ -64,8 +64,8 @@ class DisplayWindow:
         # 这里可以预加载一些常用的图片资源，提升显示速度
         preloaded = {}
         background_path = Utils().resource_path("assets/picture/bg.png")
-        width = 1920 * self.scale_x
-        height = 1080 * self.scale_y
+        width = int(self.canvas.winfo_width())
+        height = int(self.canvas.winfo_height())
         if os.path.exists(background_path):
             preloaded['background'] = self._load_image(background_path, width, height)
         background_path = Utils().resource_path("assets/picture/lv_bg.png")
