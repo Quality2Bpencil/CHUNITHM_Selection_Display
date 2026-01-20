@@ -220,12 +220,12 @@ class GUIWindow:
         random_const_frame.pack(fill=tk.X, pady=(0, 20))
         # 随机曲曲库
         tk.Label(random_const_frame, text="随机曲曲库: ").pack(side=tk.LEFT)
-        entry_library = ttk.Combobox(random_const_frame,
+        self.entry_library = ttk.Combobox(random_const_frame,
                                     values=["全曲库"] + list(Utils().users_music_list.keys()),
                                     state="readonly",  # 只读，不能输入
                                     width=20)
-        entry_library.pack(side=tk.LEFT, padx=(0, 50))
-        entry_library.set("全曲库")
+        self.entry_library.pack(side=tk.LEFT, padx=(0, 50))
+        self.entry_library.set("全曲库")
         # 随机曲定数范围
         ttk.Label(random_const_frame, text="随机曲定数范围: ").pack(side=tk.LEFT)
         self.entry_random_const_min = ttk.Entry(random_const_frame, width=10)
@@ -260,12 +260,12 @@ class GUIWindow:
         music_number_frame = ttk.Frame(result_frame)
         music_number_frame.pack(fill=tk.X, pady=(0, 10))
         tk.Label(music_number_frame, text="曲数: ").pack(side=tk.LEFT)
-        self.music_number = ttk.Combobox(music_number_frame,
+        self.entry_music_number = ttk.Combobox(music_number_frame,
                                         values=["2", "3"],
                                         state="readonly",  # 只读，不能输入
                                         width=20)
-        self.music_number.pack(side=tk.LEFT, padx=(5, 10))
-        self.music_number.set("2")
+        self.entry_music_number.pack(side=tk.LEFT, padx=(5, 10))
+        self.entry_music_number.set("2")
 
         # 1P队伍和队员名
         result_frame_1p = ttk.Frame(result_frame)
@@ -371,9 +371,16 @@ class GUIWindow:
     def random_music(self):
         """随机选曲"""
         self.controller.random_music()
-        
+
+    def show_round_result(self):
+        self.controller.show_round_result()
+
+    def show_team_score(self):
+        self.controller.show_team_score()
+    
+    """
     def update_1p_song(self, event=None):
-        """实时更新1P选曲显示文本"""
+        #实时更新1P选曲显示文本
         text = self.entry_1p_song.get()
         music = Utils().music_list.get(text, None)
         if text == "":
@@ -382,9 +389,11 @@ class GUIWindow:
             self.label_1p_song.config(text=f"曲目: {music['Name']} (难度: {music['Const']})")
         else:
             self.label_1p_song.config(text="找不到对应曲目！")
+    """
     
+    """
     def update_2p_song(self, event=None):
-        """实时更新2P选曲显示文本"""
+        #实时更新2P选曲显示文本
         text = self.entry_2p_song.get()
         music = Utils().music_list.get(text, None)
         if text == "":
@@ -393,12 +402,7 @@ class GUIWindow:
             self.label_2p_song.config(text=f"曲目: {music['Name']} (难度: {music['Const']})")
         else:
             self.label_2p_song.config(text="找不到对应曲目！")
-
-    def show_round_result(self):
-        pass
-
-    def show_team_score(self):
-        pass
+    """
 
     def import_excel(self):
         """导入Excel文件"""

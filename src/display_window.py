@@ -886,8 +886,6 @@ class DisplayWindow:
         if data:
             image_time = 1.4
 
-            image_time = 1.4
-
             #边框图片大小
             frame_width = self._scale(424, 'x')
             frame_height = self._scale(510, 'y')
@@ -1586,6 +1584,96 @@ class DisplayWindow:
             else:
                 pass
 
+    def _show_round_result(self, data):
+        self.canvas.delete("all")
+        self.image_references.clear()
+        
+        canvas_width = int(self.canvas.winfo_width())
+        canvas_height = int(self.canvas.winfo_height())
+        
+        # 显示背景
+        self._display_background('lv_background')
+
+        image_time = 1.3
+
+        result_frame_time = image_time
+        result_frame_path = Utils().resource_path("assets/picture/result_frame.png")
+        result_frame_width = self._scale(632, 'x')
+        result_frame_height = self._scale(92, 'y')
+
+        if data['music_number'] == '2':
+            #比赛进程
+            text = '大将战'
+            self.canvas.create_text(
+                canvas_width // 2,
+                self._scale(100, 'y'),
+                text=text,
+                font=("LiSu", self._scale_font_size(40), "bold"),
+                fill="black",
+                anchor=tk.CENTER
+            )
+
+            # 队名与选手名
+            text = data['team1']
+            self.canvas.create_text(
+                canvas_width // 2 - self._scale(400, 'x'),
+                self._scale(130, 'y'),
+                text=text,
+                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
+                fill="black",
+                anchor=tk.CENTER
+            )
+
+            text = data['player1']
+            self.canvas.create_text(
+                canvas_width // 2 - self._scale(400, 'x'),
+                self._scale(200, 'y'),
+                text=text,
+                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
+                fill="black",
+                anchor=tk.CENTER
+            )
+
+            text = data['team2']
+            self.canvas.create_text(
+                canvas_width // 2 + self._scale(400, 'x'),
+                self._scale(105, 'y'),
+                text=text,
+                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
+                fill="black",
+                anchor=tk.CENTER
+            )
+
+            text = data['player2']
+            self.canvas.create_text(
+                canvas_width // 2 + self._scale(400, 'x'),
+                self._scale(175, 'y'),
+                text=text,
+                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
+                fill="black",
+                anchor=tk.CENTER
+            )
+
+            img_overlay_list=[
+            ]
+            tk_left_picture = self.overlay_image(
+                base_image_path=result_frame_path,
+                img_overlay_list=img_overlay_list,
+                text_overlay_list=[
+                ],
+                target_size=(int(result_frame_width*result_frame_time), int(result_frame_height*result_frame_time))
+            )
+            if tk_left_picture:
+                self.canvas.create_image(
+                    canvas_width // 2 - self._scale(400, 'x'),
+                    canvas_height // 2 + self._scale(50, 'y'),
+                    image=tk_left_picture,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_left_picture)
+        elif data['music_number'] == '3':
+            pass
+
     def _get_adaptive_font_size(self, text, family, max_width, max_height, initial_size, min_size): # 旧版本，大概率停用
         """计算自适应字体大小，确保文本不超过指定宽度和高度"""
         new_text = text
@@ -1838,7 +1926,8 @@ class DisplayWindow:
         """接收控制器命令并分发处理"""
         handlers = {
             "DISPLAY_SELECTION": self.display_selection,
-            "RANDOM_MUSIC": self.random_music
+            "RANDOM_MUSIC": self.random_music,
+            "SHOW_ROUND_RESULT": self._show_round_result,
         }
         
         handler = handlers.get(command)

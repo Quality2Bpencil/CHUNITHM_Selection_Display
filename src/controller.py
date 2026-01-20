@@ -46,7 +46,31 @@ class Controller:
             'max_const': self.gui_window.entry_random_const_max.get() or '16.0',
         }
         self._send_command("RANDOM_MUSIC", data)
-        
+
+    def show_round_result(self):
+        """显示回合结果"""
+        data = {
+            'music_number': self.gui_window.entry_music_number.get() or '2',
+            'team1': self.gui_window.result_entry_1p_team.get() or "1P队伍",
+            'player1': self.gui_window.result_entry_1p_player.get() or "1P玩家",
+            'team2': self.gui_window.result_entry_2p_team.get() or "2P队伍",
+            'player2': self.gui_window.result_entry_2p_player.get() or "2P玩家",
+            'track1_music': self.gui_window.track1_music.get() or "music1",
+            'track1_1p_score': self.gui_window.track1_1p_score.get() or "0",
+            'track1_2p_score': self.gui_window.track1_2p_score.get() or "0",
+            'track2_music': self.gui_window.track2_music.get() or "music2",
+            'track2_1p_score': self.gui_window.track2_1p_score.get() or "0",
+            'track2_2p_score': self.gui_window.track2_2p_score.get() or "0",
+            'track3_music': self.gui_window.track3_music.get() or "music3",
+            'track3_1p_score': self.gui_window.track3_1p_score.get() or "0",
+            'track3_2p_score': self.gui_window.track3_2p_score.get() or "0",
+        }
+        self._send_command("SHOW_ROUND_RESULT", data)
+
+    def show_team_score(self):
+        """显示团队积分"""
+        self._send_command("SHOW_TEAM_SCORE")
+
     def update_display(self, image_path):
         """更新显示窗口"""
         if self.display_window:

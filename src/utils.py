@@ -57,3 +57,5 @@ class CurrentProcess(Enum):
     NONE = 0
     DISPLAY_SELECTION = 1
     RANDOM_MUSIC = 2
+    SHOW_ROUND_RESULT = 3
+    SHOW_TEAM_SCORE = 4
