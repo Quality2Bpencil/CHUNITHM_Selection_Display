@@ -25,7 +25,7 @@ class DisplayWindow:
         
         self.setup_ui(window_size)
 
-        self.preloaded = self.preload_images()
+        self.preloaded = self.preload_images(window_size)
         self.preloaded_fonts, self.preloaded_BPM_font = self.preload_fonts()
 
         self._display_background('background')
@@ -59,13 +59,12 @@ class DisplayWindow:
         """缩放大小"""
         return self._scale(width, 'x'), self._scale(height, 'y')
     
-    def preload_images(self):
+    def preload_images(self, window_size=None):
         """预加载必要的图片资源"""
         # 这里可以预加载一些常用的图片资源，提升显示速度
         preloaded = {}
         background_path = Utils().resource_path("assets/picture/bg.png")
-        width = int(self.canvas.winfo_width())
-        height = int(self.canvas.winfo_height())
+        width, height = window_size if window_size else (1920, 1080)
         if os.path.exists(background_path):
             preloaded['background'] = self._load_image(background_path, width, height)
         background_path = Utils().resource_path("assets/picture/lv_bg.png")
@@ -73,6 +72,9 @@ class DisplayWindow:
             preloaded['lv_background'] = self._load_image(background_path, width, height)
         preloaded[Utils().resource_path("assets/picture/frame.png")] = Image.open(Utils().resource_path("assets/picture/frame.png")).convert('RGBA')
         preloaded[Utils().resource_path("assets/picture/levels.dds")] = Image.open(Utils().resource_path("assets/picture/levels.dds")).convert('RGBA')
+        preloaded[Utils().resource_path("assets/picture/result_frame.dds")] = Image.open(Utils().resource_path("assets/picture/result_frame.dds")).convert('RGBA')
+        preloaded[Utils().resource_path("assets/picture/result_frame.png")] = Image.open(Utils().resource_path("assets/picture/result_frame.png")).convert('RGBA')
+        preloaded[Utils().resource_path("assets/picture/result_num.dds")] = Image.open(Utils().resource_path("assets/picture/result_num.dds")).convert('RGBA')
         return preloaded
     
     def preload_fonts(self):
@@ -1601,6 +1603,30 @@ class DisplayWindow:
         result_frame_width = self._scale(632, 'x')
         result_frame_height = self._scale(92, 'y')
 
+        result_num_path = Utils().resource_path("assets/picture/result_num.dds")
+        result_num_top = 450
+        result_num_bottom = 538
+        result_num_left = [
+            12, 112, 197, 293, 386, 480, 574, 668, 763, 857
+        ]
+        result_num_right = [
+            82, 171, 270, 365, 459, 554, 646, 741, 834, 929
+        ]
+        result_total_time = 1.3
+        result_single_time = 0.85
+        result_num_height = self._scale(result_num_bottom - result_num_top, 'y')
+        result_num_width = [
+            self._scale(result_num_right[i] - result_num_left[i], 'x') for i in range(10)
+        ]
+        
+        result_comma_path = Utils().resource_path("assets/picture/result_num.dds")
+        result_comma_top = 488
+        result_comma_bottom = 539
+        result_comma_left = 949
+        result_comma_right = 998
+        result_comma_height = self._scale(result_comma_bottom - result_comma_top, 'y')
+        result_comma_width = self._scale(result_comma_right - result_comma_left, 'x')
+
         if data['music_number'] == '2':
             #比赛进程
             text = '大将战'
@@ -1653,24 +1679,147 @@ class DisplayWindow:
                 fill="black",
                 anchor=tk.CENTER
             )
+            
+            new_width = self._scale(890, 'x')  # 指定大小
+            new_height = self._scale(800, 'y')
+            gray_overlay = Image.new('RGBA', (new_width - self._scale(20, 'x'), new_height // 2 + self._scale(12, 'y')), (128, 128, 128, 255))  # 灰色长方形
+            
+            # 左侧框
+            try:
+                track1_score1 = max(0, min(1001000, int(data['track1_1p_score'])))
+            except (ValueError, TypeError):
+                track1_score1 = 0
+            try:
+                track2_score1 = max(0, min(1001000, int(data['track2_1p_score'])))
+            except (ValueError, TypeError):
+                track2_score1 = 0
+            try:
+                track3_score1 = max(0, min(1001000, int(data['track3_1p_score'])))
+            except (ValueError, TypeError):
+                track3_score1 = 0
+            total_score1 = track1_score1 + track2_score1 + track3_score1
 
-            img_overlay_list=[
-            ]
-            tk_left_picture = self.overlay_image(
-                base_image_path=result_frame_path,
-                img_overlay_list=img_overlay_list,
-                text_overlay_list=[
-                ],
-                target_size=(int(result_frame_width*result_frame_time), int(result_frame_height*result_frame_time))
+            overlay_list1 = [{'image': gray_overlay, 'position': (new_width//2, new_height//2 + self._scale(185, 'y')), 'anchor': 'center'}]
+            position_x = new_width - self._scale(40, 'x')
+            for index in range(len(str(total_score1))):
+                digit = int(str(total_score1)[-index-1])
+                if index % 3 == 0 and index != 0:
+                    position_x -= self._scale(75, 'x')
+                    overlay_list1.append(
+                        {
+                            'path': result_comma_path,
+                            'position': (
+                                position_x,
+                                new_height//2 - self._scale(100 - 38, 'y')
+                            ),
+                            'size': (int(result_comma_width * result_total_time), int(result_comma_height * result_total_time)),
+                            'crop': (result_comma_left, result_comma_top, result_comma_right, result_comma_bottom)
+                        }
+                    )
+                    position_x -= self._scale(65, 'x')
+                else:
+                    position_x -= self._scale(90, 'x')
+                overlay_list1.append(
+                    {
+                        'path': result_num_path,
+                        'position': (
+                            position_x,
+                            new_height//2 - self._scale(100, 'y')
+                        ),
+                        'size': (int(result_num_width[digit] * result_total_time), int(result_num_height * result_total_time)),
+                        'crop': (result_num_left[digit], result_num_top, result_num_right[digit], result_num_bottom)
+                    }
+                )
+            tk_new_overlay1 = self.overlay_image(
+                base_image_path=None,
+                img_overlay_list=overlay_list1,
+                text_overlay_list=[],
+                target_size=(new_width, new_height),
+                base_color=(255, 255, 224, 255)  # 淡黄色
             )
-            if tk_left_picture:
+            if tk_new_overlay1:
                 self.canvas.create_image(
-                    canvas_width // 2 - self._scale(400, 'x'),
-                    canvas_height // 2 + self._scale(50, 'y'),
-                    image=tk_left_picture,
+                    canvas_width // 2 - self._scale(460, 'x'),
+                    canvas_height // 2 + self._scale(50, 'y'),  # 位置
+                    image=tk_new_overlay1,
                     anchor=tk.CENTER
                 )
-                self.image_references.append(tk_left_picture)
+                self.image_references.append(tk_new_overlay1)
+
+            # 右侧框
+            tk_new_overlay2 = self.overlay_image(
+                base_image_path=None,
+                img_overlay_list=[
+                    {'image': gray_overlay, 'position': (new_width//2, new_height//2), 'anchor': 'center'}
+                ],
+                text_overlay_list=[],
+                target_size=(new_width, new_height),
+                base_color=(255, 255, 224, 255)  # 淡黄色
+            )
+            if tk_new_overlay2:
+                self.canvas.create_image(
+                    canvas_width // 2 + self._scale(460, 'x'),
+                    canvas_height // 2 + self._scale(50, 'y'),  # 位置
+                    image=tk_new_overlay2,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay2)
+
+            for Index in range(3):
+                if Index == 0:
+                    score = track1_score1
+                elif Index == 1:
+                    score = track2_score1
+                elif Index == 2:
+                    score = track3_score1
+                overlay_list = []
+                position_x = int(result_frame_width * result_frame_time) - self._scale(20, 'x')
+                for index in range(len(str(score))):
+                    digit = int(str(score)[-index-1])
+                    if index % 3 == 0 and index != 0:
+                        position_x -= self._scale(75 * 0.7, 'x')
+                        overlay_list.append(
+                            {
+                                'path': result_comma_path,
+                                'position': (
+                                    position_x,
+                                    result_frame_height//2 + self._scale(17 + 37, 'y')
+                                ),
+                                'size': (int(result_comma_width * result_single_time), int(result_comma_height * result_single_time)),
+                                'crop': (result_comma_left, result_comma_top, result_comma_right, result_comma_bottom)
+                            }
+                        )
+                        position_x -= self._scale(65 * 0.7, 'x')
+                    else:
+                        position_x -= self._scale(90 * 0.7, 'x')
+                    overlay_list.append(
+                        {
+                            'path': result_num_path,
+                            'position': (
+                                position_x,
+                                int(result_frame_height * result_frame_time) // 2 + self._scale(17, 'y')
+                            ),
+                            'size': (int(result_num_width[digit] * result_single_time), int(result_num_height * result_single_time)),
+                            'crop': (result_num_left[digit], result_num_top, result_num_right[digit], result_num_bottom)
+                        }
+                    )
+                tk_left_picture = self.overlay_image(
+                    base_image_path=result_frame_path,
+                    img_overlay_list=overlay_list,
+                    text_overlay_list=[],
+                    target_size=(int(result_frame_width*result_frame_time), int(result_frame_height*result_frame_time))
+                )
+                if tk_left_picture:
+                    self.canvas.create_image(
+                        canvas_width // 2 - self._scale(460, 'x'),
+                        canvas_height // 2 + self._scale(100 + 135 * Index, 'y'),
+                        image=tk_left_picture,
+                        anchor=tk.CENTER
+                    )
+                    self.image_references.append(tk_left_picture)
+
+           
+
         elif data['music_number'] == '3':
             pass
 
@@ -1751,15 +1900,15 @@ class DisplayWindow:
         # 返回新的PIL图像
         return Image.merge('RGBA', (r, g, b, a))
         
-    def overlay_image(self, base_image_path, img_overlay_list, text_overlay_list, target_size=None, output_img=False):
+    def overlay_image(self, base_image_path, img_overlay_list, text_overlay_list, target_size=None, output_img=False, base_color=(255, 255, 255, 255)):
         """
         使用PIL直接叠加图片
         
         Args:
-            base_image_path: 底图路径
+            base_image_path: 底图路径，或None以创建白色底图
             img_overlay_list: 覆盖图信息列表，每个元素为字典:
                 {
-                    'path': '图片路径',
+                    'path': '图片路径', 或 'image': PIL Image对象
                     'position': (x, y),      # 可选，默认(0,0)
                     'size': (w, h),          # 可选，覆盖图大小
                     'crop': (l,t,r,b),       # 可选，裁剪
@@ -1779,6 +1928,7 @@ class DisplayWindow:
             ]
             output_path: 输出路径（可选）
             target_size: 目标尺寸 (width, height)
+            base_color: 当base_image_path为None时使用的底图颜色，RGBA元组
         
         Returns:
             ImageTk.PhotoImage 对象
@@ -1786,13 +1936,19 @@ class DisplayWindow:
         try:
             # 加载底图
             base_img = None
-            if self.preloaded.get(base_image_path):
+            if base_image_path is None:
+                # 创建指定颜色底图
+                if target_size:
+                    base_img = Image.new('RGBA', target_size, base_color)
+                else:
+                    base_img = Image.new('RGBA', (100, 100), base_color)
+            elif self.preloaded.get(base_image_path):
                 base_img = self.preloaded[base_image_path].copy()
             else:
                 base_img = Image.open(base_image_path).convert('RGBA')
             
             # 调整底图大小
-            if target_size:
+            if target_size and base_image_path is not None:
                 base_img = base_img.resize(target_size, Image.Resampling.LANCZOS)
             
             final_img = base_img.copy()
@@ -1801,16 +1957,21 @@ class DisplayWindow:
             draw = ImageDraw.Draw(composite_layer)
 
             for overlay_info in img_overlay_list:
-                path = overlay_info.get('path')
-                if not path:
-                    continue
-                    
-                # 加载覆盖图（考虑缓存）
-                overlay_img = None
-                if self.preloaded.get(path):
-                    overlay_img = self.preloaded[path].copy()
+                if 'image' in overlay_info:
+                    overlay_img = overlay_info['image']
+                elif 'path' in overlay_info:
+                    path = overlay_info.get('path')
+                    if not path:
+                        continue
+                        
+                    # 加载覆盖图（考虑缓存）
+                    overlay_img = None
+                    if self.preloaded.get(path):
+                        overlay_img = self.preloaded[path].copy()
+                    else:
+                        overlay_img = Image.open(path).convert('RGBA')
                 else:
-                    overlay_img = Image.open(path).convert('RGBA')
+                    continue
                 
                 # 裁剪
                 if crop := overlay_info.get('crop'):
@@ -1940,6 +2101,8 @@ class DisplayWindow:
                         self.current_process = CurrentProcess.NONE
                     else:
                         self.current_process = CurrentProcess.DISPLAY_SELECTION
+                elif command == "SHOW_ROUND_RESULT":
+                    self.current_process = CurrentProcess.SHOW_ROUND_RESULT
                 handler(data)
             except Exception as e:
                 self._show_error(f"命令处理错误 ({command}): {str(e)}")
