@@ -72,7 +72,7 @@ class DisplayWindow:
             preloaded['lv_background'] = self._load_image(background_path, width, height)
         preloaded[Utils().resource_path("assets/picture/frame.png")] = Image.open(Utils().resource_path("assets/picture/frame.png")).convert('RGBA')
         preloaded[Utils().resource_path("assets/picture/levels.dds")] = Image.open(Utils().resource_path("assets/picture/levels.dds")).convert('RGBA')
-        preloaded[Utils().resource_path("assets/picture/result_frame.dds")] = Image.open(Utils().resource_path("assets/picture/result_frame.dds")).convert('RGBA')
+        preloaded[Utils().resource_path("assets/picture/result_texture.dds")] = Image.open(Utils().resource_path("assets/picture/result_texture.dds")).convert('RGBA')
         preloaded[Utils().resource_path("assets/picture/result_frame.png")] = Image.open(Utils().resource_path("assets/picture/result_frame.png")).convert('RGBA')
         preloaded[Utils().resource_path("assets/picture/result_num.dds")] = Image.open(Utils().resource_path("assets/picture/result_num.dds")).convert('RGBA')
         return preloaded
@@ -201,9 +201,9 @@ class DisplayWindow:
         #两侧的等级框
         level_image_path = Utils().resource_path("assets/picture/levels.dds")
         level_left = 4
-        level_top = 378
+        level_top = 1
         level_right = 79
-        level_bottom = 462
+        level_bottom = 85
         level_width = self._scale(level_right - level_left, 'x')
         level_height = self._scale(level_bottom - level_top, 'y')
         level_time = image_time
@@ -211,16 +211,16 @@ class DisplayWindow:
         level_dy_position = self._scale(160, 'y')
 
         level_number_path = level_image_path
-        level_number_top = 519
-        level_number_bottom = 554
+        level_number_top = 142
+        level_number_bottom = 177
         level_number_left = [
             12, 54, 92, 132, 171, 212, 252, 293, 331, 371
         ]
         level_number_right = [
             36, 69, 117, 157, 197, 237, 276, 316, 356, 540
         ]
-        level_plus_top = 517
-        level_plus_bottom = 530
+        level_plus_top = 140
+        level_plus_bottom = 154
         level_plus_left = 411
         level_plus_right = 424
         level_plus_width = self._scale(level_plus_right - level_plus_left, 'x')
@@ -237,10 +237,10 @@ class DisplayWindow:
         BPM_dy_position = self._scale(328, 'y')
         BPM_font_size = self._scale_font_size(24)
 
-        nd_top = 491
+        nd_top = 114
         nd_left = 193
         nd_right = 311
-        nd_bottom = 501
+        nd_bottom = 124
 
         nd_width = self._scale(nd_right - nd_left, 'x')
         nd_height = self._scale(nd_bottom - nd_top, 'y')
@@ -644,7 +644,7 @@ class DisplayWindow:
                                     int(frame_width * frame_time) // 2 - level_dx_position + self._scale(- 2 - 20, 'x'),
                                     int(frame_height * frame_time) // 2 + level_number_dy_position
                                 ),
-                                'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
+                                'size': (int(level_number_width*level_number_time), int(level_number_height*level_number_time)),
                                 'alpha': 1.0,
                                 'crop': crop_region
                             }
@@ -658,7 +658,7 @@ class DisplayWindow:
                                     int(frame_width * frame_time) // 2 - level_dx_position + self._scale(- 2 + 20, 'x'),
                                     int(frame_height * frame_time) // 2 + level_number_dy_position
                                 ),
-                                'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
+                                'size': (int(level_number_width*level_number_time), int(level_number_height*level_number_time)),
                                 'alpha': 1.0,
                                 'crop': crop_region
                             }
@@ -672,7 +672,7 @@ class DisplayWindow:
                                         int(frame_width * frame_time) // 2 - level_dx_position + self._scale(40, 'x'),
                                         int(frame_height * frame_time) // 2 + level_number_dy_position - self._scale(30, 'y')
                                     ),
-                                    'size': (int(level_plus_width*level_time), int(level_plus_height*level_number_time)),
+                                    'size': (int(level_plus_width*level_number_time), int(level_plus_height*level_number_time)),
                                     'alpha': 1.0,
                                     'crop': crop_region
                                 }
@@ -906,9 +906,9 @@ class DisplayWindow:
 
             level_image_path = Utils().resource_path("assets/picture/levels.dds")
             level_left = 4
-            level_top = 378
+            level_top = 1
             level_right = 79
-            level_bottom = 462
+            level_bottom = 85
             level_width = self._scale(level_right - level_left, 'x')
             level_height = self._scale(level_bottom - level_top, 'y')
             level_time = image_time
@@ -916,16 +916,16 @@ class DisplayWindow:
             level_dy_position = self._scale(160, 'y')
 
             level_number_path = level_image_path
-            level_number_top = 519
-            level_number_bottom = 554
+            level_number_top = 142
+            level_number_bottom = 177
             level_number_left = [
                 12, 54, 92, 132, 171, 212, 252, 293, 331, 371
             ]
             level_number_right = [
                 36, 69, 117, 157, 197, 237, 276, 316, 356, 540
             ]
-            level_plus_top = 517
-            level_plus_bottom = 530
+            level_plus_top = 140
+            level_plus_bottom = 154
             level_plus_left = 411
             level_plus_right = 424
             level_plus_width = self._scale(level_plus_right - level_plus_left, 'x')
@@ -942,10 +942,10 @@ class DisplayWindow:
             BPM_dy_position = self._scale(328, 'y')
             BPM_font_size = self._scale_font_size(24)
 
-            nd_top = 491
+            nd_top = 114
             nd_left = 193
             nd_right = 311
-            nd_bottom = 501
+            nd_bottom = 124
 
             nd_width = self._scale(nd_right - nd_left, 'x')
             nd_height = self._scale(nd_bottom - nd_top, 'y')
@@ -1220,7 +1220,7 @@ class DisplayWindow:
                             int(frame_width * frame_time) // 2 - level_dx_position + self._scale(- 2 + 20, 'x'),
                             int(frame_height * frame_time) // 2 + level_number_dy_position
                         ),
-                        'size': (int(level_number_width*level_time), int(level_number_height*level_number_time)),
+                        'size': (int(level_number_width*level_number_time), int(level_number_height*level_number_time)),
                         'alpha': 1.0,
                         'crop': crop_region
                     }
@@ -1234,7 +1234,7 @@ class DisplayWindow:
                                 int(frame_width * frame_time) // 2 - level_dx_position + self._scale(40, 'x'),
                                 int(frame_height * frame_time) // 2 + level_number_dy_position + self._scale(-30, 'y')
                             ),
-                            'size': (int(level_plus_width*level_time), int(level_plus_height*level_number_time)),
+                            'size': (int(level_plus_width*level_number_time), int(level_plus_height*level_number_time)),
                             'alpha': 1.0,
                             'crop': crop_region
                         }
@@ -1604,8 +1604,8 @@ class DisplayWindow:
         result_frame_height = self._scale(92, 'y')
 
         result_num_path = Utils().resource_path("assets/picture/result_num.dds")
-        result_num_top = 450
-        result_num_bottom = 538
+        result_num_top = 5
+        result_num_bottom = 92
         result_num_left = [
             12, 112, 197, 293, 386, 480, 574, 668, 763, 857
         ]
@@ -1620,10 +1620,10 @@ class DisplayWindow:
         ]
         
         result_comma_path = Utils().resource_path("assets/picture/result_num.dds")
-        result_comma_top = 488
-        result_comma_bottom = 539
-        result_comma_left = 949
-        result_comma_right = 998
+        result_comma_top = 44
+        result_comma_bottom = 93
+        result_comma_left = 951
+        result_comma_right = 997
         result_comma_height = self._scale(result_comma_bottom - result_comma_top, 'y')
         result_comma_width = self._scale(result_comma_right - result_comma_left, 'x')
 
@@ -1634,22 +1634,74 @@ class DisplayWindow:
         jacket_width = self._scale(83 * image_time, 'x')
         jacket_height = self._scale(83 * image_time, 'y')
 
+        level_frame_path = Utils().resource_path("assets/picture/result_texture.dds")
+        level_frame_top = 41
+        level_frame_left = 4
+        level_frame_right = 70
+        level_frame_bottom = 102
+        level_frame_width = self._scale((level_frame_right - level_frame_left) * image_time, 'x')
+        level_frame_height = self._scale((level_frame_bottom - level_frame_top) * image_time, 'y')
+
+        level_number_path = Utils().resource_path("assets/picture/levels.dds")
+        level_number_top = 142
+        level_number_bottom = 177
+        level_number_left = [
+            12, 54, 92, 132, 171, 212, 252, 293, 331, 371
+        ]
+        level_number_right = [
+            36, 69, 117, 157, 197, 237, 276, 316, 356, 540
+        ]
+        level_plus_top = 140
+        level_plus_bottom = 154
+        level_plus_left = 411
+        level_plus_right = 424
+        level_plus_width = self._scale(level_plus_right - level_plus_left, 'x')
+        level_plus_height = self._scale(level_plus_bottom - level_plus_top, 'y')
+        level_number_height = self._scale(level_number_bottom - level_number_top, 'y')
+        level_number_time = 1.0
+
+        track_path = Utils().resource_path("assets/picture/result_texture.dds")
+        track_top = 5
+        track_bottom = 75
+        track_left = [
+            75, 144, 213
+        ]
+        track_right = [
+            138, 207, 276
+        ]
+        track_width = [
+            self._scale((track_right[i] - track_left[i]) * image_time, 'x') for i in range(3)
+        ]
+        track_height = self._scale((track_bottom - track_top) * image_time, 'y')
+
+        total_score_path = Utils().resource_path("assets/picture/result_texture.dds")
+        total_score_top = 82
+        total_score_bottom = 115
+        total_score_left = 73
+        total_score_right = 346
+        total_score_width = self._scale((total_score_right - total_score_left) * image_time, 'x')
+        total_score_height = self._scale((total_score_bottom - total_score_top) * image_time, 'y')
+
+         # 获取曲目信息
         random_music1 = random.choice(list(Utils().music_list.values()))
         music1_id = data['track1_music'].split()[0]
         music1 = Utils().music_list.get(music1_id, random_music1) # 如果找不到对应曲目，就用随机曲
         music1_name, title_font_size = self.get_adaptive_font_size(music1['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
+        music1_const = music1['Const']
         jacket1_path = music1['Jacket']
 
         random_music2 = random.choice(list(Utils().music_list.values()))
-        music2_id = data['track1_music'].split()[0]
+        music2_id = data['track2_music'].split()[0]
         music2 = Utils().music_list.get(music2_id, random_music2) # 如果找不到对应曲目，就用随机曲
         music2_name, title_font_size = self.get_adaptive_font_size(music2['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
+        music2_const = music2['Const']
         jacket2_path = music2['Jacket']
 
         random_music3 = random.choice(list(Utils().music_list.values()))
-        music3_id = data['track1_music'].split()[0]
+        music3_id = data['track3_music'].split()[0]
         music3 = Utils().music_list.get(music3_id, random_music3) # 如果找不到对应曲目，就用随机曲
         music3_name, title_font_size = self.get_adaptive_font_size(music3['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
+        music3_const = music3['Const']
         jacket3_path = music3['Jacket']
 
         if data['music_number'] == '2':
@@ -1711,15 +1763,15 @@ class DisplayWindow:
             
             # 左侧框
             try:
-                track1_score1 = max(0, min(1001000, int(data['track1_1p_score'])))
+                track1_score1 = max(0, min(1010000, int(data['track1_1p_score'])))
             except (ValueError, TypeError):
                 track1_score1 = 0
             try:
-                track2_score1 = max(0, min(1001000, int(data['track2_1p_score'])))
+                track2_score1 = max(0, min(1010000, int(data['track2_1p_score'])))
             except (ValueError, TypeError):
                 track2_score1 = 0
             try:
-                track3_score1 = max(0, min(1001000, int(data['track3_1p_score'])))
+                track3_score1 = max(0, min(1010000, int(data['track3_1p_score'])))
             except (ValueError, TypeError):
                 track3_score1 = 0
             total_score1 = track1_score1 + track2_score1 + track3_score1
@@ -1760,7 +1812,7 @@ class DisplayWindow:
                 img_overlay_list=overlay_list1,
                 text_overlay_list=[],
                 target_size=(new_width, new_height),
-                base_color=(255, 255, 224, 255)  # 淡黄色
+                base_color=(254, 254, 228, 255)  # 淡黄色
             )
             if tk_new_overlay1:
                 self.canvas.create_image(
@@ -1773,15 +1825,15 @@ class DisplayWindow:
 
             # 右侧框
             try:
-                track1_score2 = max(0, min(1001000, int(data['track1_2p_score'])))
+                track1_score2 = max(0, min(1010000, int(data['track1_2p_score'])))
             except (ValueError, TypeError):
                 track1_score2 = 0
             try:
-                track2_score2 = max(0, min(1001000, int(data['track2_2p_score'])))
+                track2_score2 = max(0, min(1010000, int(data['track2_2p_score'])))
             except (ValueError, TypeError):
                 track2_score2 = 0
             try:
-                track3_score2 = max(0, min(1001000, int(data['track3_2p_score'])))
+                track3_score2 = max(0, min(1010000, int(data['track3_2p_score'])))
             except (ValueError, TypeError):
                 track3_score2 = 0
             total_score2 = track1_score2 + track2_score2 + track3_score2
@@ -1823,7 +1875,7 @@ class DisplayWindow:
                 img_overlay_list=overlay_list2,
                 text_overlay_list=[],
                 target_size=(new_width, new_height),
-                base_color=(255, 255, 224, 255)  # 淡黄色
+                base_color=(254, 254, 228, 255)  # 淡黄色
             )
             if tk_new_overlay2:
                 self.canvas.create_image(
@@ -1854,29 +1906,104 @@ class DisplayWindow:
                     position_in_canvas = 460
                 if Index % 3 == 0:
                     music_name = music1_name
+                    const = music1_const
                     jacket_path = jacket1_path
                 elif Index % 3 == 1:
                     music_name = music2_name
+                    const = music2_const
                     jacket_path = jacket2_path
                 elif Index % 3 == 2:
                     music_name = music3_name
+                    const = music3_const
                     jacket_path = jacket3_path
 
                 overlay_list = [
                     {
-                        'path': jacket_path,
+                        'path': track_path, # Track
+                        'position': (
+                            self._scale(61, 'x'),
+                            int(result_frame_height * result_frame_time) // 2
+                        ),
+                        'size': (track_width[Index % 3], track_height),
+                        'crop': (track_left[Index % 3], track_top, track_right[Index % 3], track_bottom)
+                    },
+                    {
+                        'path': jacket_path, # 曲绘
                         'position': (
                             self._scale(174, 'x'),
                             int(result_frame_height * result_frame_time) // 2
                         ),
                         'size': (jacket_width, jacket_height),
+                    },
+                    {
+                        'path': level_frame_path, # 等级框
+                        'position': (
+                            self._scale(273, 'x'),
+                            self._scale(78, 'y'),
+                        ),
+                        'size': (level_frame_width, level_frame_height),
+                        'crop': (level_frame_left, level_frame_top, level_frame_right, level_frame_bottom)
                     }
                 ]
-                position_x = int(result_frame_width * result_frame_time) - self._scale(20, 'x')
+
+                # 等级
+                if const < 10:
+                    pass # 应该不会打小于10级的歌吧，我是懒狗不做了
+                elif const <100:
+                    number1 = int(const) // 10
+                    number2 = int(const) % 10
+                    decimal = const - int(const)
+                    crop_region = (level_number_left[number1], level_number_top, level_number_right[number1], level_number_bottom)
+                    level_number_width = self._scale(level_number_right[number1] - level_number_left[number1], 'x')
+                    overlay_list.append(
+                        {
+                            'path': level_number_path,
+                            'position': (
+                                self._scale(273 - 18, 'x'),
+                                self._scale(88, 'y'),
+                            ),
+                            'size': (int(level_number_width*level_number_time), int(level_number_height*level_number_time)),
+                            'alpha': 1.0,
+                            'crop': crop_region
+                        }
+                    )
+                    crop_region = (level_number_left[number2], level_number_top, level_number_right[number2], level_number_bottom)
+                    level_number_width = self._scale(level_number_right[number2] - level_number_left[number2], 'x')
+                    overlay_list.append(
+                        {
+                            'path': level_number_path,
+                            'position': (
+                                self._scale(273 + 12, 'x'),
+                                self._scale(88, 'y'),
+                            ),
+                            'size': (int(level_number_width*level_number_time), int(level_number_height*level_number_time)),
+                            'alpha': 1.0,
+                            'crop': crop_region
+                        }
+                    )
+                    if decimal >= 0.5:
+                        crop_region = (level_plus_left, level_plus_top, level_plus_right, level_plus_bottom)
+                        overlay_list.append(
+                            {
+                                'path': level_number_path,
+                                'position': (
+                                    self._scale(273 + 30, 'x'),
+                                    self._scale(78 - 10, 'y'),
+                                ),
+                                'size': (int(level_plus_width*level_number_time), int(level_plus_height*level_number_time)),
+                                'alpha': 1.0,
+                                'crop': crop_region
+                            }
+                        )
+                else:
+                    pass
+
+                # 成绩
+                position_x = int(result_frame_width * result_frame_time) + self._scale(15, 'x')
                 for index in range(len(str(score))):
                     digit = int(str(score)[-index-1])
                     if index % 3 == 0 and index != 0:
-                        position_x -= self._scale(75 * 0.7, 'x')
+                        position_x -= self._scale(75 * 0.67, 'x')
                         overlay_list.append(
                             {
                                 'path': result_comma_path,
@@ -1888,9 +2015,9 @@ class DisplayWindow:
                                 'crop': (result_comma_left, result_comma_top, result_comma_right, result_comma_bottom)
                             }
                         )
-                        position_x -= self._scale(65 * 0.7, 'x')
+                        position_x -= self._scale(65 * 0.67, 'x')
                     else:
-                        position_x -= self._scale(90 * 0.7, 'x')
+                        position_x -= self._scale(90 * 0.67, 'x')
                     overlay_list.append(
                         {
                             'path': result_num_path,
