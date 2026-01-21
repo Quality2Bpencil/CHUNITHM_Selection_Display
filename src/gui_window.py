@@ -266,6 +266,13 @@ class GUIWindow:
                                         width=20)
         self.entry_music_number.pack(side=tk.LEFT, padx=(5, 10))
         self.entry_music_number.set("2")
+        tk.Label(music_number_frame, text="比赛进程: ").pack(side=tk.LEFT)
+        self.entry_process = ttk.Combobox(music_number_frame,
+                                        values=["先锋战", "中坚战", "副将战", "大将战"],
+                                        state="readonly",  # 只读，不能输入
+                                        width=20)
+        self.entry_process.pack(side=tk.LEFT, padx=(5, 10))
+        self.entry_process.set("先锋战")
 
         # 1P队伍和队员名
         result_frame_1p = ttk.Frame(result_frame)

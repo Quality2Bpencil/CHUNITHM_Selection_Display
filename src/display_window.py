@@ -79,6 +79,9 @@ class DisplayWindow:
         preloaded[Utils().resource_path("assets/picture/result_num.dds")] = Image.open(Utils().resource_path("assets/picture/result_num.dds")).convert('RGBA')
         preloaded[Utils().resource_path("assets/picture/team_frame.dds")] = Image.open(Utils().resource_path("assets/picture/team_frame.dds")).convert('RGBA')
         preloaded[Utils().resource_path("assets/picture/title_frame.dds")] = Image.open(Utils().resource_path("assets/picture/title_frame.dds")).convert('RGBA')
+        preloaded[Utils().resource_path("assets/picture/rank_1st.dds")] = Image.open(Utils().resource_path("assets/picture/rank_1st.dds")).convert('RGBA')
+        preloaded[Utils().resource_path("assets/picture/rank_2nd.dds")] = Image.open(Utils().resource_path("assets/picture/rank_2nd.dds")).convert('RGBA')
+        preloaded[Utils().resource_path("assets/picture/kop_frame.dds")] = Image.open(Utils().resource_path("assets/picture/kop_frame.dds")).convert('RGBA') 
         return preloaded
     
     def preload_fonts(self):
@@ -90,9 +93,11 @@ class DisplayWindow:
                 preloaded_fonts[size] = ImageFont.truetype(font_path, size)
         BPM_font_path = Utils().resource_path("assets/fonts/Helvetica Bold.ttf")
         preloaded_BPM_font = ImageFont.truetype(BPM_font_path, self._scale_font_size(24))
-        team_font_path = Utils().resource_path("assets/fonts/SourceHanSansSC-Medium-2.otf")
-        preloaded_team_font = ImageFont.truetype(team_font_path, self._scale_font_size(36))
-        return preloaded_fonts, preloaded_BPM_font,preloaded_team_font, preloaded_team_font
+        team_font_path = Utils().resource_path("assets/fonts/SourceHanSansSC-Bold-2.otf")
+        preloaded_team_font = ImageFont.truetype(team_font_path, self._scale_font_size(42))
+        title_font_path = Utils().resource_path("assets/fonts/SourceHanSansSC-Medium-2.otf")
+        preloaded_title_font = ImageFont.truetype(title_font_path, self._scale_font_size(46))
+        return preloaded_fonts, preloaded_BPM_font,preloaded_team_font, preloaded_title_font
 
     def setup_ui(self, window_size=None):
         """设置用户界面"""
@@ -1606,8 +1611,8 @@ class DisplayWindow:
         result_frame_height = self._scale(92, 'y')
 
         result_num_path = Utils().resource_path("assets/picture/result_num.dds")
-        result_num_top = 5
-        result_num_bottom = 92
+        result_num_top = 2
+        result_num_bottom = 93
         result_num_left = [
             12, 112, 197, 293, 386, 480, 574, 668, 763, 857
         ]
@@ -1615,7 +1620,7 @@ class DisplayWindow:
             82, 171, 270, 365, 459, 554, 646, 741, 834, 929
         ]
         result_total_time = 1.3
-        result_single_time = 0.85
+        result_single_time = 0.8
         result_num_height = self._scale(result_num_bottom - result_num_top, 'y')
         result_num_width = [
             self._scale(result_num_right[i] - result_num_left[i], 'x') for i in range(10)
@@ -1678,7 +1683,7 @@ class DisplayWindow:
 
         total_score_path = Utils().resource_path("assets/picture/result_texture.dds")
         total_score_top = 82
-        total_score_bottom = 115
+        total_score_bottom = 116
         total_score_left = 73
         total_score_right = 346
         total_score_width = self._scale((total_score_right - total_score_left) * image_time, 'x')
@@ -1688,54 +1693,88 @@ class DisplayWindow:
         team_frame_path = Utils().resource_path("assets/picture/team_frame.dds")
         team_frame_width = self._scale(704 * team_frame_time, 'x')
         team_frame_height = self._scale(74 * team_frame_time, 'y')
-        team_font_path = Utils().resource_path("assets/fonts/SourceHanSansSC-Medium-2.otf")
+        team_font_path = Utils().resource_path("assets/fonts/SourceHanSansSC-Bold-2.otf")
         team_font_size = self._scale_font_size(42)
 
         title_frame_time = 1.5
         title_frame_path = Utils().resource_path("assets/picture/title_frame.dds")
         title_frame_width = self._scale(582 * title_frame_time, 'x')
         title_frame_height = self._scale(51 * title_frame_time, 'y')
+        title_font_path = Utils().resource_path("assets/fonts/SourceHanSansSC-Medium-2.otf")
+        title_font_size = self._scale_font_size(46)
+
+        rank_time = 0.95
+        rank1_path = Utils().resource_path("assets/picture/rank_1st.dds")
+        rank2_path = Utils().resource_path("assets/picture/rank_2nd.dds")
+        rank_width = self._scale(170 * rank_time, 'x')
+        rank_height = self._scale(156 * rank_time, 'y')
 
          # 获取曲目信息
         random_music1 = random.choice(list(Utils().music_list.values()))
         music1_id = data['track1_music'].split()[0]
         music1 = Utils().music_list.get(music1_id, random_music1) # 如果找不到对应曲目，就用随机曲
-        music1_name, title_font_size = self.get_adaptive_font_size(music1['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
+        music1_name, title_font_size0 = self.get_adaptive_font_size(music1['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
         music1_const = music1['Const']
         jacket1_path = music1['Jacket']
 
         random_music2 = random.choice(list(Utils().music_list.values()))
         music2_id = data['track2_music'].split()[0]
         music2 = Utils().music_list.get(music2_id, random_music2) # 如果找不到对应曲目，就用随机曲
-        music2_name, title_font_size = self.get_adaptive_font_size(music2['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
+        music2_name, title_font_size0 = self.get_adaptive_font_size(music2['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
         music2_const = music2['Const']
         jacket2_path = music2['Jacket']
 
         random_music3 = random.choice(list(Utils().music_list.values()))
         music3_id = data['track3_music'].split()[0]
         music3 = Utils().music_list.get(music3_id, random_music3) # 如果找不到对应曲目，就用随机曲
-        music3_name, title_font_size = self.get_adaptive_font_size(music3['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
+        music3_name, title_font_size0 = self.get_adaptive_font_size(music3['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
         music3_const = music3['Const']
         jacket3_path = music3['Jacket']
 
+        kop_frame_path = Utils().resource_path("assets/picture/kop_frame.dds")
+        kop_frame_time = 1.8
+        kop_frame_width = self._scale(316 * kop_frame_time, 'x')
+        kop_frame_height = self._scale(71 * kop_frame_time, 'y')
+
+        kop_font_path = Utils().resource_path("assets/fonts/AnJingChenXingShuFanTi-2.ttf")
+        kop_font_size = self._scale_font_size(96)
+        process_text = data['process']
+
         if data['music_number'] == '2':
             #比赛进程
-            text = '大将战'
-            self.canvas.create_text(
-                canvas_width // 2,
-                self._scale(100, 'y'),
-                text=text,
-                font=("LiSu", self._scale_font_size(40), "bold"),
-                fill="black",
-                anchor=tk.CENTER
+            tk_new_overlay0 = self.overlay_image(
+                base_image_path=kop_frame_path,
+                img_overlay_list=[],
+                text_overlay_list=[
+                    {
+                        'text': process_text,
+                        'position': (
+                            kop_frame_width // 2,
+                            kop_frame_height // 2
+                        ),
+                        'font_size': kop_font_size,
+                        'font_path': kop_font_path,
+                        'anchor': 'mm',
+                        'color': (255, 255, 255)
+                    }
+                ],
+                target_size=(kop_frame_width, kop_frame_height)
             )
+            if tk_new_overlay0:
+                self.canvas.create_image(
+                    canvas_width // 2,
+                    self._scale(130, 'y'),  # 位置
+                    image=tk_new_overlay0,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay0)
 
             # 大框大小
             new_width = self._scale(890, 'x')  # 指定大小
             new_height = self._scale(800, 'y')
             gray_overlay = Image.new('RGBA', (new_width - self._scale(20, 'x'), new_height // 2 + self._scale(12, 'y')), (128, 128, 128, 255))  # 灰色长方形
             
-            # 左侧框
+            # 分数
             try:
                 track1_score1 = max(0, min(1010000, int(data['track1_1p_score'])))
             except (ValueError, TypeError):
@@ -1750,6 +1789,25 @@ class DisplayWindow:
                 track3_score1 = 0
             total_score1 = track1_score1 + track2_score1 + track3_score1
 
+            try:
+                track1_score2 = max(0, min(1010000, int(data['track1_2p_score'])))
+            except (ValueError, TypeError):
+                track1_score2 = 0
+            try:
+                track2_score2 = max(0, min(1010000, int(data['track2_2p_score'])))
+            except (ValueError, TypeError):
+                track2_score2 = 0
+            try:
+                track3_score2 = max(0, min(1010000, int(data['track3_2p_score'])))
+            except (ValueError, TypeError):
+                track3_score2 = 0
+            total_score2 = track1_score2 + track2_score2 + track3_score2
+
+            # 左侧框
+            if total_score1 >= total_score2:
+                rank_path = rank1_path
+            else:
+                rank_path = rank2_path
             overlay_list1 = [
                 {'image': gray_overlay, 'position': (new_width//2, new_height//2 + self._scale(185, 'y')), 'anchor': 'center'},
                 {
@@ -1768,6 +1826,23 @@ class DisplayWindow:
                         self._scale(136, 'y')
                     )
                 },
+                {
+                    'path': total_score_path, # 总成绩图标
+                    'size': (total_score_width, total_score_height),
+                    'position': (
+                        self._scale(215, 'x'),
+                        self._scale(207, 'y')
+                    ),
+                    'crop': (total_score_left, total_score_top, total_score_right, total_score_bottom)
+                },
+                {
+                    'path': rank_path, # 排名
+                    'size': (rank_width, rank_height),
+                    'position': (
+                        self._scale(900, 'x'),
+                        self._scale(173, 'y')
+                    )
+                }
             ]
             position_x = new_width - self._scale(40, 'x')
             for index in range(len(str(total_score1))):
@@ -1818,10 +1893,10 @@ class DisplayWindow:
                         'text': data['player1'], # 选手名
                         'position': (
                             new_width // 2,
-                            self._scale(136, 'y')
+                            self._scale(133, 'y')
                         ),
-                        'font_size': team_font_size,
-                        'font_path': team_font_path,
+                        'font_size': title_font_size,
+                        'font_path': title_font_path,
                         'anchor': 'mm'
                     }
                 ],
@@ -1831,28 +1906,53 @@ class DisplayWindow:
             if tk_new_overlay1:
                 self.canvas.create_image(
                     canvas_width // 2 - self._scale(460, 'x'),
-                    canvas_height // 2 + self._scale(50, 'y'),  # 位置
+                    canvas_height // 2 + self._scale(100, 'y'),  # 位置
                     image=tk_new_overlay1,
                     anchor=tk.CENTER
                 )
                 self.image_references.append(tk_new_overlay1)
 
             # 右侧框
-            try:
-                track1_score2 = max(0, min(1010000, int(data['track1_2p_score'])))
-            except (ValueError, TypeError):
-                track1_score2 = 0
-            try:
-                track2_score2 = max(0, min(1010000, int(data['track2_2p_score'])))
-            except (ValueError, TypeError):
-                track2_score2 = 0
-            try:
-                track3_score2 = max(0, min(1010000, int(data['track3_2p_score'])))
-            except (ValueError, TypeError):
-                track3_score2 = 0
-            total_score2 = track1_score2 + track2_score2 + track3_score2
-
-            overlay_list2 = [{'image': gray_overlay, 'position': (new_width//2, new_height//2 + self._scale(185, 'y')), 'anchor': 'center'}]
+            if total_score2 >= total_score1:
+                rank_path = rank1_path
+            else:
+                rank_path = rank2_path
+            overlay_list2 = [
+                {'image': gray_overlay, 'position': (new_width//2, new_height//2 + self._scale(185, 'y')), 'anchor': 'center'},
+                {
+                    'path': team_frame_path, # 队伍框
+                    'size': (team_frame_width, team_frame_height),
+                    'position': (
+                        new_width // 2,
+                        self._scale(28, 'y')
+                    )
+                },
+                {
+                    'path': title_frame_path, # 昵称框
+                    'size': (title_frame_width, title_frame_height),
+                    'position': (
+                        new_width // 2,
+                        self._scale(136, 'y')
+                    )
+                },
+                {
+                    'path': total_score_path, # 总成绩图标
+                    'size': (total_score_width, total_score_height),
+                    'position': (
+                        self._scale(215, 'x'),
+                        self._scale(207, 'y')
+                    ),
+                    'crop': (total_score_left, total_score_top, total_score_right, total_score_bottom)
+                },
+                {
+                    'path': rank_path, # 排名
+                    'size': (rank_width, rank_height),
+                    'position': (
+                        self._scale(900, 'x'),
+                        self._scale(173, 'y')
+                    )
+                }
+            ]
             position_x = new_width - self._scale(40, 'x')
             for index in range(len(str(total_score2))):
                 digit = int(str(total_score2)[-index-1])
@@ -1887,14 +1987,36 @@ class DisplayWindow:
             tk_new_overlay2 = self.overlay_image(
                 base_image_path=None,
                 img_overlay_list=overlay_list2,
-                text_overlay_list=[],
+                text_overlay_list=[
+                    {
+                        'text': data['team2'], # 队名
+                        'position': (
+                            self._scale(200, 'x'),
+                            self._scale(45, 'y')
+                        ),
+                        'font_size': team_font_size,
+                        'font_path': team_font_path,
+                        'anchor': 'lm',
+                        'color': (255, 255, 255)
+                    },
+                    {
+                        'text': data['player2'], # 选手名
+                        'position': (
+                            new_width // 2,
+                            self._scale(133, 'y')
+                        ),
+                        'font_size': title_font_size,
+                        'font_path': title_font_path,
+                        'anchor': 'mm'
+                    }
+                ],
                 target_size=(new_width, new_height),
                 base_color=(254, 254, 228, 255)  # 淡黄色
             )
             if tk_new_overlay2:
                 self.canvas.create_image(
                     canvas_width // 2 + self._scale(460, 'x'),
-                    canvas_height // 2 + self._scale(50, 'y'),  # 位置
+                    canvas_height // 2 + self._scale(100, 'y'),  # 位置
                     image=tk_new_overlay2,
                     anchor=tk.CENTER
                 )
@@ -2013,31 +2135,31 @@ class DisplayWindow:
                     pass
 
                 # 成绩
-                position_x = int(result_frame_width * result_frame_time) + self._scale(15, 'x')
+                position_x = int(result_frame_width * result_frame_time) + self._scale(10, 'x')
                 for index in range(len(str(score))):
                     digit = int(str(score)[-index-1])
                     if index % 3 == 0 and index != 0:
-                        position_x -= self._scale(75 * 0.67, 'x')
+                        position_x -= self._scale(75 * 0.65, 'x')
                         overlay_list.append(
                             {
                                 'path': result_comma_path,
                                 'position': (
                                     position_x,
-                                    result_frame_height//2 + self._scale(17 + 37, 'y')
+                                    result_frame_height//2 + self._scale(19 + 37, 'y')
                                 ),
                                 'size': (int(result_comma_width * result_single_time), int(result_comma_height * result_single_time)),
                                 'crop': (result_comma_left, result_comma_top, result_comma_right, result_comma_bottom)
                             }
                         )
-                        position_x -= self._scale(65 * 0.67, 'x')
+                        position_x -= self._scale(65 * 0.65, 'x')
                     else:
-                        position_x -= self._scale(90 * 0.67, 'x')
+                        position_x -= self._scale(90 * 0.65, 'x')
                     overlay_list.append(
                         {
                             'path': result_num_path,
                             'position': (
                                 position_x,
-                                int(result_frame_height * result_frame_time) // 2 + self._scale(17, 'y')
+                                int(result_frame_height * result_frame_time) // 2 + self._scale(19, 'y')
                             ),
                             'size': (int(result_num_width[digit] * result_single_time), int(result_num_height * result_single_time)),
                             'crop': (result_num_left[digit], result_num_top, result_num_right[digit], result_num_bottom)
@@ -2053,7 +2175,7 @@ class DisplayWindow:
                                 self._scale(245, 'x'),
                                 self._scale(20, 'y')
                             ),
-                            'font_size': title_font_size,
+                            'font_size': title_font_size0,
                             'color': (255, 255, 255),
                             'anchor': 'lm'
                         },
@@ -2063,7 +2185,7 @@ class DisplayWindow:
                 if tk_left_picture:
                     self.canvas.create_image(
                         canvas_width // 2 + self._scale(position_in_canvas, 'x'),
-                        canvas_height // 2 + self._scale(100 + 135 * (Index % 3), 'y'),
+                        canvas_height // 2 + self._scale(150 + 135 * (Index % 3), 'y'),
                         image=tk_left_picture,
                         anchor=tk.CENTER
                     )
@@ -2284,8 +2406,10 @@ class DisplayWindow:
                     font_path = text_info.get('font_path')
                     if font_path == Utils().resource_path("assets/fonts/Helvetica Bold.ttf") and font_size == self._scale_font_size(24):
                         font = self.preloaded_BPM_font
-                    elif font_path == Utils().resource_path("assets/fonts/SourceHanSansSC-Medium-2.otf") and font_size == self._scale_font_size(36):
+                    elif font_path == Utils().resource_path("assets/fonts/SourceHanSansSC-Bold-2.otf") and font_size == self._scale_font_size(42):
                         font = self.preloaded_team_font
+                    elif font_path == Utils().resource_path("assets/fonts/SourceHanSansSC-Medium-2.otf") and font_size == self._scale_font_size(46):
+                        font = self.preloaded_title_font
                     else:
                         font = ImageFont.truetype(font_path, font_size)
                 else:
