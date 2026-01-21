@@ -141,9 +141,20 @@ class GUIWindow:
         )
         self.btn_team_score.pack(side=tk.LEFT, padx=5)
         
-        # 文本输入区域
+        # 选曲区域
         input_frame = ttk.LabelFrame(main_frame, text="指定选曲", padding="15")
         input_frame.pack(fill=tk.X, pady=(0, 20))
+
+        #比赛进程
+        process_frame = ttk.Frame(input_frame)
+        process_frame.pack(fill=tk.X, pady=(0, 10))
+        tk.Label(process_frame, text="比赛进程: ").pack(side=tk.LEFT)
+        self.entry_process1 = ttk.Combobox(process_frame,
+                                        values=["先锋战", "中坚战", "副将战", "大将战"],
+                                        state="readonly",  # 只读，不能输入
+                                        width=20)
+        self.entry_process1.pack(side=tk.LEFT, padx=(5, 10))
+        self.entry_process1.set("先锋战")
         
         # 1P队伍和队员名
         frame_1p = ttk.Frame(input_frame)
@@ -256,7 +267,7 @@ class GUIWindow:
         result_frame = ttk.LabelFrame(main_frame, text="小局结果显示", padding="15")
         result_frame.pack(fill=tk.X, pady=(0, 20))
 
-        # 曲数
+        # 曲数与比赛进程
         music_number_frame = ttk.Frame(result_frame)
         music_number_frame.pack(fill=tk.X, pady=(0, 10))
         tk.Label(music_number_frame, text="曲数: ").pack(side=tk.LEFT)
@@ -267,12 +278,12 @@ class GUIWindow:
         self.entry_music_number.pack(side=tk.LEFT, padx=(5, 10))
         self.entry_music_number.set("2")
         tk.Label(music_number_frame, text="比赛进程: ").pack(side=tk.LEFT)
-        self.entry_process = ttk.Combobox(music_number_frame,
+        self.entry_process2 = ttk.Combobox(music_number_frame,
                                         values=["先锋战", "中坚战", "副将战", "大将战"],
                                         state="readonly",  # 只读，不能输入
                                         width=20)
-        self.entry_process.pack(side=tk.LEFT, padx=(5, 10))
-        self.entry_process.set("先锋战")
+        self.entry_process2.pack(side=tk.LEFT, padx=(5, 10))
+        self.entry_process2.set("先锋战")
 
         # 1P队伍和队员名
         result_frame_1p = ttk.Frame(result_frame)

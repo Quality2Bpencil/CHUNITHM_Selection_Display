@@ -82,6 +82,9 @@ class DisplayWindow:
         preloaded[Utils().resource_path("assets/picture/rank_1st.dds")] = Image.open(Utils().resource_path("assets/picture/rank_1st.dds")).convert('RGBA')
         preloaded[Utils().resource_path("assets/picture/rank_2nd.dds")] = Image.open(Utils().resource_path("assets/picture/rank_2nd.dds")).convert('RGBA')
         preloaded[Utils().resource_path("assets/picture/kop_frame.dds")] = Image.open(Utils().resource_path("assets/picture/kop_frame.dds")).convert('RGBA') 
+        preloaded[Utils().resource_path("assets/picture/lv_frame.dds")] = Image.open(Utils().resource_path("assets/picture/lv_frame.dds")).convert('RGBA') 
+        preloaded[Utils().resource_path("assets/picture/title_staff_frame.dds")] = Image.open(Utils().resource_path("assets/picture/title_staff_frame.dds")).convert('RGBA')
+        #preloaded[Utils().resource_path("assets/picture/team_icon_frame.dds")] = Image.open(Utils().resource_path("assets/picture/team_icon_frame.dds")).convert('RGBA') 
         return preloaded
     
     def preload_fonts(self):
@@ -176,19 +179,31 @@ class DisplayWindow:
         # 显示背景
         self._display_background('lv_background')
 
-        #标题
-        self.canvas.create_text(
+        lv_frame_path = Utils().resource_path("assets/picture/lv_frame.dds")
+        lv_frame_time = 1.5
+        lv_frame_width = self._scale(311 * lv_frame_time, 'x')
+        lv_frame_height = self._scale(69 * lv_frame_time, 'x')
+
+        # 标题
+        tk_new_overlay0 = self.overlay_image(
+            base_image_path=lv_frame_path,
+            img_overlay_list=[],
+            text_overlay_list=[
+            ],
+            target_size=(lv_frame_width, lv_frame_height)
+        )
+        if tk_new_overlay0:
+            self.canvas.create_image(
                 canvas_width // 2,
-                self._scale(130, 'y'),
-                text='随机选曲',
-                font=("Microsoft YaHei", self._scale_font_size(50), "bold"),
-                fill="black",
+                self._scale(130, 'y'),  # 位置
+                image=tk_new_overlay0,
                 anchor=tk.CENTER
             )
+            self.image_references.append(tk_new_overlay0)
 
         image_time = 1.4
 
-        #边框图片大小
+        # 边框图片大小
         frame_width = self._scale(424, 'x')
         frame_height = self._scale(510, 'y')
         frame_time = image_time
@@ -965,46 +980,138 @@ class DisplayWindow:
             font_path = Utils().resource_path("assets/fonts/SEGA_MARUGOTHICDB.ttf")
             BPM_font_path = Utils().resource_path("assets/fonts/Helvetica Bold.ttf")
 
+            kop_frame_path = Utils().resource_path("assets/picture/kop_frame.dds")
+            kop_frame_time = 1.6
+            kop_frame_width = self._scale(316 * kop_frame_time, 'x')
+            kop_frame_height = self._scale(71 * kop_frame_time, 'y')
+
+            team_frame_path = Utils().resource_path("assets/picture/team_icon_frame.dds")
+            team_frame_time = 2.1
+            team_frame_width = self._scale(434 * team_frame_time, 'x')
+            team_frame_height = self._scale(47 * team_frame_time, 'y')
+            team_font_path = Utils().resource_path("assets/fonts/SourceHanSansSC-Bold-2.otf")
+            team_font_size = self._scale_font_size(42)
+
+            title_frame_time = 1.5
+            title_frame_path = Utils().resource_path("assets/picture/title_staff_frame.dds")
+            title_frame_width = self._scale(593 * title_frame_time * 0.9, 'x')
+            title_frame_height = self._scale(61 * title_frame_time, 'y')
+            title_font_path = Utils().resource_path("assets/fonts/SourceHanSansSC-Medium-2.otf")
+            title_font_size = self._scale_font_size(46)
+
+            kop_font_path = Utils().resource_path("assets/fonts/AnJingChenXingShuFanTi-2.ttf")
+            kop_font_size = self._scale_font_size(88)
+            process_text = data['process']
+
+            #比赛进程
+            tk_new_overlay0 = self.overlay_image(
+                base_image_path=kop_frame_path,
+                img_overlay_list=[],
+                text_overlay_list=[
+                    {
+                        'text': process_text,
+                        'position': (
+                            kop_frame_width // 2,
+                            kop_frame_height // 2
+                        ),
+                        'font_size': kop_font_size,
+                        'font_path': kop_font_path,
+                        'anchor': 'mm',
+                        'color': (255, 255, 255)
+                    }
+                ],
+                target_size=(kop_frame_width, kop_frame_height)
+            )
+            if tk_new_overlay0:
+                self.canvas.create_image(
+                    canvas_width // 2,
+                    self._scale(110, 'y'),  # 位置
+                    image=tk_new_overlay0,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay0)
+
             # 队名与选手名
-            text = data['team1']
-            self.canvas.create_text(
-                canvas_width // 2 - self._scale(400, 'x'),
-                self._scale(105, 'y'),
-                text=text,
-                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
-                fill="black",
-                anchor=tk.CENTER
+            """
+            tk_new_overlay1 = self.overlay_image(
+                base_image_path=team_frame_path,
+                img_overlay_list=[],
+                text_overlay_list=[
+                    {
+                        'text': data['team1'],
+                        'position': (
+                            self._scale(270, 'x'),
+                            team_frame_height // 2 + self._scale(2, 'y')
+                        ),
+                        'font_size': team_font_size,
+                        'font_path': team_font_path,
+                        'anchor': 'lm',
+                        'color': (255, 255, 255)
+                    }
+                ],
+                target_size=(team_frame_width, team_frame_height)
             )
+            if tk_new_overlay1:
+                self.canvas.create_image(
+                    canvas_width // 2 - self._scale(400 + 10, 'x'),
+                    self._scale(180, 'y'),  # 位置
+                    image=tk_new_overlay1,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay1)
+            """
+            
+            tk_new_overlay1 = self.overlay_image(
+                base_image_path=title_frame_path,
+                img_overlay_list=[],
+                text_overlay_list=[
+                    {
+                        'text': data['team1'] + ' - ' + data['player1'],
+                        'position': (
+                            title_frame_width // 2,
+                            title_frame_height // 2 - self._scale(3, 'y'),
+                        ),
+                        'font_size': title_font_size,
+                        'font_path': title_font_path,
+                        'anchor': 'mm'
+                    }
+                ],
+                target_size=(title_frame_width, title_frame_height)
+            )
+            if tk_new_overlay1:
+                self.canvas.create_image(
+                    canvas_width // 2 - self._scale(400, 'x'),
+                    self._scale(225, 'y'),  # 位置
+                    image=tk_new_overlay1,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay1)
 
-            text = f'{data['player1']} 的自选曲'
-            self.canvas.create_text(
-                canvas_width // 2 - self._scale(400, 'x'),
-                self._scale(175, 'y'),
-                text=text,
-                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
-                fill="black",
-                anchor=tk.CENTER
+            tk_new_overlay2 = self.overlay_image(
+                base_image_path=title_frame_path,
+                img_overlay_list=[],
+                text_overlay_list=[
+                    {
+                        'text': data['team2'] + ' - ' + data['player2'],
+                        'position': (
+                            title_frame_width // 2,
+                            title_frame_height // 2 - self._scale(3, 'y'),
+                        ),
+                        'font_size': title_font_size,
+                        'font_path': title_font_path,
+                        'anchor': 'mm'
+                    }
+                ],
+                target_size=(title_frame_width, title_frame_height)
             )
-
-            text = data['team2']
-            self.canvas.create_text(
-                canvas_width // 2 + self._scale(400, 'x'),
-                self._scale(105, 'y'),
-                text=text,
-                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
-                fill="black",
-                anchor=tk.CENTER
-            )
-
-            text = f'{data['player2']} 的自选曲'
-            self.canvas.create_text(
-                canvas_width // 2 + self._scale(400, 'x'),
-                self._scale(175, 'y'),
-                text=text,
-                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
-                fill="black",
-                anchor=tk.CENTER
-            )
+            if tk_new_overlay2:
+                self.canvas.create_image(
+                    canvas_width // 2 + self._scale(400, 'x'),
+                    self._scale(225, 'y'),  # 位置
+                    image=tk_new_overlay2,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay2)
             
             # 左侧曲目
             random_music1 = random.choice(list(Utils().music_list.values()))
@@ -1147,7 +1254,7 @@ class DisplayWindow:
             if tk_left_picture:
                 self.canvas.create_image(
                     canvas_width // 2 - self._scale(400, 'x'),
-                    canvas_height // 2 + self._scale(50, 'y'),
+                    canvas_height // 2 + self._scale(120, 'y'),
                     image=tk_left_picture,
                     anchor=tk.CENTER
                 )
@@ -1294,7 +1401,7 @@ class DisplayWindow:
             if tk_right_picture:
                 self.canvas.create_image(
                     canvas_width // 2 + self._scale(400, 'x'),
-                    canvas_height // 2 + self._scale(50, 'y'),
+                    canvas_height // 2 + self._scale(120, 'y'),
                     image=tk_right_picture,
                     anchor=tk.CENTER
                 )
@@ -1763,6 +1870,441 @@ class DisplayWindow:
             if tk_new_overlay0:
                 self.canvas.create_image(
                     canvas_width // 2,
+                    self._scale(160, 'y'),  # 位置
+                    image=tk_new_overlay0,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay0)
+
+            # 大框大小
+            new_width = self._scale(890, 'x')  # 指定大小
+            new_height = self._scale(670, 'y')
+            gray_overlay = Image.new('RGBA', (new_width - self._scale(20, 'x'), self._scale(282, 'y')), (30, 44, 60, 255))  # 靛青色长方形
+            
+            # 分数
+            try:
+                track1_score1 = max(0, min(1010000, int(data['track1_1p_score'])))
+            except (ValueError, TypeError):
+                track1_score1 = 0
+            try:
+                track2_score1 = max(0, min(1010000, int(data['track2_1p_score'])))
+            except (ValueError, TypeError):
+                track2_score1 = 0
+            total_score1 = track1_score1 + track2_score1
+
+            try:
+                track1_score2 = max(0, min(1010000, int(data['track1_2p_score'])))
+            except (ValueError, TypeError):
+                track1_score2 = 0
+            try:
+                track2_score2 = max(0, min(1010000, int(data['track2_2p_score'])))
+            except (ValueError, TypeError):
+                track2_score2 = 0
+            total_score2 = track1_score2 + track2_score2
+
+            # 左侧框
+            if total_score1 >= total_score2:
+                rank_path = rank1_path
+            else:
+                rank_path = rank2_path
+            overlay_list1 = [
+                {'image': gray_overlay, 'position': (new_width//2, new_height//2 + self._scale(185, 'y')), 'anchor': 'center'},
+                {
+                    'path': team_frame_path, # 队伍框
+                    'size': (team_frame_width, team_frame_height),
+                    'position': (
+                        new_width // 2,
+                        self._scale(28, 'y')
+                    )
+                },
+                {
+                    'path': title_frame_path, # 昵称框
+                    'size': (title_frame_width, title_frame_height),
+                    'position': (
+                        new_width // 2,
+                        self._scale(136, 'y')
+                    )
+                },
+                {
+                    'path': total_score_path, # 总成绩图标
+                    'size': (total_score_width, total_score_height),
+                    'position': (
+                        self._scale(215, 'x'),
+                        self._scale(207, 'y')
+                    ),
+                    'crop': (total_score_left, total_score_top, total_score_right, total_score_bottom)
+                },
+                {
+                    'path': rank_path, # 排名
+                    'size': (rank_width, rank_height),
+                    'position': (
+                        self._scale(900, 'x'),
+                        self._scale(173, 'y')
+                    )
+                }
+            ]
+            position_x = new_width - self._scale(40, 'x')
+            for index in range(len(str(total_score1))):
+                digit = int(str(total_score1)[-index-1])
+                if index % 3 == 0 and index != 0:
+                    position_x -= self._scale(75, 'x')
+                    overlay_list1.append(
+                        {
+                            'path': result_comma_path,
+                            'position': (
+                                position_x,
+                                self._scale(300 + 38, 'y')
+                            ),
+                            'size': (int(result_comma_width * result_total_time), int(result_comma_height * result_total_time)),
+                            'crop': (result_comma_left, result_comma_top, result_comma_right, result_comma_bottom)
+                        }
+                    )
+                    position_x -= self._scale(65, 'x')
+                else:
+                    position_x -= self._scale(90, 'x')
+                overlay_list1.append(
+                    {
+                        'path': result_num_path,
+                        'position': (
+                            position_x,
+                            self._scale(300, 'y')
+                        ),
+                        'size': (int(result_num_width[digit] * result_total_time), int(result_num_height * result_total_time)),
+                        'crop': (result_num_left[digit], result_num_top, result_num_right[digit], result_num_bottom)
+                    }
+                )
+            tk_new_overlay1 = self.overlay_image(
+                base_image_path=None,
+                img_overlay_list=overlay_list1,
+                text_overlay_list=[
+                    {
+                        'text': data['team1'], # 队名
+                        'position': (
+                            self._scale(200, 'x'),
+                            self._scale(45, 'y')
+                        ),
+                        'font_size': team_font_size,
+                        'font_path': team_font_path,
+                        'anchor': 'lm',
+                        'color': (255, 255, 255)
+                    },
+                    {
+                        'text': data['player1'], # 选手名
+                        'position': (
+                            new_width // 2,
+                            self._scale(133, 'y')
+                        ),
+                        'font_size': title_font_size,
+                        'font_path': title_font_path,
+                        'anchor': 'mm'
+                    }
+                ],
+                target_size=(new_width, new_height),
+                base_color=(254, 254, 228, 255)  # 淡黄色
+            )
+            if tk_new_overlay1:
+                self.canvas.create_image(
+                    canvas_width // 2 - self._scale(460, 'x'),
+                    canvas_height // 2 + self._scale(100 - 10, 'y'),  # 位置
+                    image=tk_new_overlay1,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay1)
+
+            # 右侧框
+            if total_score2 >= total_score1:
+                rank_path = rank1_path
+            else:
+                rank_path = rank2_path
+            overlay_list2 = [
+                {'image': gray_overlay, 'position': (new_width//2, new_height//2 + self._scale(185, 'y')), 'anchor': 'center'},
+                {
+                    'path': team_frame_path, # 队伍框
+                    'size': (team_frame_width, team_frame_height),
+                    'position': (
+                        new_width // 2,
+                        self._scale(28, 'y')
+                    )
+                },
+                {
+                    'path': title_frame_path, # 昵称框
+                    'size': (title_frame_width, title_frame_height),
+                    'position': (
+                        new_width // 2,
+                        self._scale(136, 'y')
+                    )
+                },
+                {
+                    'path': total_score_path, # 总成绩图标
+                    'size': (total_score_width, total_score_height),
+                    'position': (
+                        self._scale(215, 'x'),
+                        self._scale(207, 'y')
+                    ),
+                    'crop': (total_score_left, total_score_top, total_score_right, total_score_bottom)
+                },
+                {
+                    'path': rank_path, # 排名
+                    'size': (rank_width, rank_height),
+                    'position': (
+                        self._scale(900, 'x'),
+                        self._scale(173, 'y')
+                    )
+                }
+            ]
+            position_x = new_width - self._scale(40, 'x')
+            for index in range(len(str(total_score2))):
+                digit = int(str(total_score2)[-index-1])
+                if index % 3 == 0 and index != 0:
+                    position_x -= self._scale(75, 'x')
+                    overlay_list2.append(
+                        {
+                            'path': result_comma_path,
+                            'position': (
+                                position_x,
+                                self._scale(300 + 38, 'y')
+                            ),
+                            'size': (int(result_comma_width * result_total_time), int(result_comma_height * result_total_time)),
+                            'crop': (result_comma_left, result_comma_top, result_comma_right, result_comma_bottom)
+                        }
+                    )
+                    position_x -= self._scale(65, 'x')
+                else:
+                    position_x -= self._scale(90, 'x')
+                overlay_list2.append(
+                    {
+                        'path': result_num_path,
+                        'position': (
+                            position_x,
+                            self._scale(300, 'y')
+                        ),
+                        'size': (int(result_num_width[digit] * result_total_time), int(result_num_height * result_total_time)),
+                        'crop': (result_num_left[digit], result_num_top, result_num_right[digit], result_num_bottom)
+                    }
+                )
+
+            tk_new_overlay2 = self.overlay_image(
+                base_image_path=None,
+                img_overlay_list=overlay_list2,
+                text_overlay_list=[
+                    {
+                        'text': data['team2'], # 队名
+                        'position': (
+                            self._scale(200, 'x'),
+                            self._scale(45, 'y')
+                        ),
+                        'font_size': team_font_size,
+                        'font_path': team_font_path,
+                        'anchor': 'lm',
+                        'color': (255, 255, 255)
+                    },
+                    {
+                        'text': data['player2'], # 选手名
+                        'position': (
+                            new_width // 2,
+                            self._scale(133, 'y')
+                        ),
+                        'font_size': title_font_size,
+                        'font_path': title_font_path,
+                        'anchor': 'mm'
+                    }
+                ],
+                target_size=(new_width, new_height),
+                base_color=(254, 254, 228, 255)  # 淡黄色
+            )
+            if tk_new_overlay2:
+                self.canvas.create_image(
+                    canvas_width // 2 + self._scale(460, 'x'),
+                    canvas_height // 2 + self._scale(100 - 10, 'y'),  # 位置
+                    image=tk_new_overlay2,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay2)
+
+            # 各个单曲成绩
+            for Index in range(4):
+                if Index == 0:
+                    score = track1_score1
+                elif Index == 1:
+                    score = track2_score1
+                elif Index == 3:
+                    score = track1_score2
+                elif Index == 4:
+                    score = track2_score2
+                if Index < 2:
+                    position_in_canvas = -460
+                elif Index >= 2:
+                    position_in_canvas = 460
+                if Index % 2 == 0:
+                    music_name = music1_name
+                    const = music1_const
+                    jacket_path = jacket1_path
+                elif Index % 2 == 1:
+                    music_name = music2_name
+                    const = music2_const
+                    jacket_path = jacket2_path
+
+                overlay_list = [
+                    {
+                        'path': track_path, # Track
+                        'position': (
+                            self._scale(61, 'x'),
+                            int(result_frame_height * result_frame_time) // 2
+                        ),
+                        'size': (track_width[Index % 2], track_height),
+                        'crop': (track_left[Index % 2], track_top, track_right[Index % 2], track_bottom)
+                    },
+                    {
+                        'path': jacket_path, # 曲绘
+                        'position': (
+                            self._scale(174, 'x'),
+                            int(result_frame_height * result_frame_time) // 2
+                        ),
+                        'size': (jacket_width, jacket_height),
+                    },
+                    {
+                        'path': level_frame_path, # 等级框
+                        'position': (
+                            self._scale(273, 'x'),
+                            self._scale(78, 'y'),
+                        ),
+                        'size': (level_frame_width, level_frame_height),
+                        'crop': (level_frame_left, level_frame_top, level_frame_right, level_frame_bottom)
+                    }
+                ]
+
+                # 等级
+                if const < 10:
+                    pass # 应该不会打小于10级的歌吧，我是懒狗不做了
+                elif const <100:
+                    number1 = int(const) // 10
+                    number2 = int(const) % 10
+                    decimal = const - int(const)
+                    crop_region = (level_number_left[number1], level_number_top, level_number_right[number1], level_number_bottom)
+                    level_number_width = self._scale(level_number_right[number1] - level_number_left[number1], 'x')
+                    overlay_list.append(
+                        {
+                            'path': level_number_path,
+                            'position': (
+                                self._scale(273 - 18, 'x'),
+                                self._scale(88, 'y'),
+                            ),
+                            'size': (int(level_number_width*level_number_time), int(level_number_height*level_number_time)),
+                            'alpha': 1.0,
+                            'crop': crop_region
+                        }
+                    )
+                    crop_region = (level_number_left[number2], level_number_top, level_number_right[number2], level_number_bottom)
+                    level_number_width = self._scale(level_number_right[number2] - level_number_left[number2], 'x')
+                    overlay_list.append(
+                        {
+                            'path': level_number_path,
+                            'position': (
+                                self._scale(273 + 12, 'x'),
+                                self._scale(88, 'y'),
+                            ),
+                            'size': (int(level_number_width*level_number_time), int(level_number_height*level_number_time)),
+                            'alpha': 1.0,
+                            'crop': crop_region
+                        }
+                    )
+                    if decimal >= 0.5:
+                        crop_region = (level_plus_left, level_plus_top, level_plus_right, level_plus_bottom)
+                        overlay_list.append(
+                            {
+                                'path': level_number_path,
+                                'position': (
+                                    self._scale(273 + 30, 'x'),
+                                    self._scale(78 - 10, 'y'),
+                                ),
+                                'size': (int(level_plus_width*level_number_time), int(level_plus_height*level_number_time)),
+                                'alpha': 1.0,
+                                'crop': crop_region
+                            }
+                        )
+                else:
+                    pass
+
+                # 成绩
+                position_x = int(result_frame_width * result_frame_time) + self._scale(10, 'x')
+                for index in range(len(str(score))):
+                    digit = int(str(score)[-index-1])
+                    if index % 3 == 0 and index != 0:
+                        position_x -= self._scale(75 * 0.65, 'x')
+                        overlay_list.append(
+                            {
+                                'path': result_comma_path,
+                                'position': (
+                                    position_x,
+                                    result_frame_height//2 + self._scale(19 + 37, 'y')
+                                ),
+                                'size': (int(result_comma_width * result_single_time), int(result_comma_height * result_single_time)),
+                                'crop': (result_comma_left, result_comma_top, result_comma_right, result_comma_bottom)
+                            }
+                        )
+                        position_x -= self._scale(65 * 0.65, 'x')
+                    else:
+                        position_x -= self._scale(90 * 0.65, 'x')
+                    overlay_list.append(
+                        {
+                            'path': result_num_path,
+                            'position': (
+                                position_x,
+                                int(result_frame_height * result_frame_time) // 2 + self._scale(19, 'y')
+                            ),
+                            'size': (int(result_num_width[digit] * result_single_time), int(result_num_height * result_single_time)),
+                            'crop': (result_num_left[digit], result_num_top, result_num_right[digit], result_num_bottom)
+                        }
+                    )
+                tk_left_picture = self.overlay_image(
+                    base_image_path=result_frame_path,
+                    img_overlay_list=overlay_list,
+                    text_overlay_list=[
+                        {
+                            'text': music_name,
+                            'position': (
+                                self._scale(245, 'x'),
+                                self._scale(20, 'y')
+                            ),
+                            'font_size': title_font_size0,
+                            'color': (255, 255, 255),
+                            'anchor': 'lm'
+                        },
+                    ],
+                    target_size=(int(result_frame_width*result_frame_time), int(result_frame_height*result_frame_time))
+                )
+                if tk_left_picture:
+                    self.canvas.create_image(
+                        canvas_width // 2 + self._scale(position_in_canvas, 'x'),
+                        canvas_height // 2 + self._scale(150 + 57 + 135 * (Index % 2), 'y'),
+                        image=tk_left_picture,
+                        anchor=tk.CENTER
+                    )
+                    self.image_references.append(tk_left_picture)
+
+        elif data['music_number'] == '3':
+            #比赛进程
+            tk_new_overlay0 = self.overlay_image(
+                base_image_path=kop_frame_path,
+                img_overlay_list=[],
+                text_overlay_list=[
+                    {
+                        'text': process_text,
+                        'position': (
+                            kop_frame_width // 2,
+                            kop_frame_height // 2
+                        ),
+                        'font_size': kop_font_size,
+                        'font_path': kop_font_path,
+                        'anchor': 'mm',
+                        'color': (255, 255, 255)
+                    }
+                ],
+                target_size=(kop_frame_width, kop_frame_height)
+            )
+            if tk_new_overlay0:
+                self.canvas.create_image(
+                    canvas_width // 2,
                     self._scale(130, 'y'),  # 位置
                     image=tk_new_overlay0,
                     anchor=tk.CENTER
@@ -1772,7 +2314,7 @@ class DisplayWindow:
             # 大框大小
             new_width = self._scale(890, 'x')  # 指定大小
             new_height = self._scale(800, 'y')
-            gray_overlay = Image.new('RGBA', (new_width - self._scale(20, 'x'), new_height // 2 + self._scale(12, 'y')), (128, 128, 128, 255))  # 灰色长方形
+            gray_overlay = Image.new('RGBA', (new_width - self._scale(20, 'x'), new_height // 2 + self._scale(12, 'y')), (30, 44, 60, 255))  # 靛青色长方形
             
             # 分数
             try:
@@ -2190,11 +2732,6 @@ class DisplayWindow:
                         anchor=tk.CENTER
                     )
                     self.image_references.append(tk_left_picture)
-
-           
-
-        elif data['music_number'] == '3':
-            pass
 
     def _get_adaptive_font_size(self, text, family, max_width, max_height, initial_size, min_size): # 旧版本，大概率停用
         """计算自适应字体大小，确保文本不超过指定宽度和高度"""

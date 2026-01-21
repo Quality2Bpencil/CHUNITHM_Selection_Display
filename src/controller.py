@@ -31,7 +31,8 @@ class Controller:
                 'music1': self.gui_window.entry_1p_song.get() or "music1",
                 'team2': self.gui_window.entry_2p_team.get() or "2P队伍",
                 'player2': self.gui_window.entry_2p_player.get() or "2P玩家",
-                'music2': self.gui_window.entry_2p_song.get() or "music2"
+                'music2': self.gui_window.entry_2p_song.get() or "music2",
+                'process': self.gui_window.entry_process1.get() or "先锋战"
             }
             self._send_command("DISPLAY_SELECTION", data)
         
@@ -64,7 +65,7 @@ class Controller:
             'track3_music': self.gui_window.track3_music.get() or "music3",
             'track3_1p_score': self.gui_window.track3_1p_score.get() or "0",
             'track3_2p_score': self.gui_window.track3_2p_score.get() or "0",
-            'process': self.gui_window.entry_process.get() or "先锋战"
+            'process': self.gui_window.entry_process2.get() or "先锋战"
         }
         self._send_command("SHOW_ROUND_RESULT", data)
 
