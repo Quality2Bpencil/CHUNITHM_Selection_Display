@@ -19,14 +19,16 @@ class DisplayWindow:
         # 图片缓存，防止垃圾回收
         self.image_references = []
         
-        # 初始化缩放系数（相对于1920x1080）
-        self.scale_x = 1.0
-        self.scale_y = 1.0
+        width, height = window_size
+
+        # 计算缩放系数（相对于1920x1080的默认大小）
+        self.scale_x = width / 1920.0
+        self.scale_y = height / 1080.0
         
         self.setup_ui(window_size)
 
         self.preloaded = self.preload_images(window_size)
-        self.preloaded_fonts, self.preloaded_BPM_font = self.preload_fonts()
+        self.preloaded_fonts, self.preloaded_BPM_font, self.preloaded_team_font, self.preloaded_title_font = self.preload_fonts()
 
         self._display_background('background')
         self.current_process = CurrentProcess.NONE
@@ -75,6 +77,8 @@ class DisplayWindow:
         preloaded[Utils().resource_path("assets/picture/result_texture.dds")] = Image.open(Utils().resource_path("assets/picture/result_texture.dds")).convert('RGBA')
         preloaded[Utils().resource_path("assets/picture/result_frame.png")] = Image.open(Utils().resource_path("assets/picture/result_frame.png")).convert('RGBA')
         preloaded[Utils().resource_path("assets/picture/result_num.dds")] = Image.open(Utils().resource_path("assets/picture/result_num.dds")).convert('RGBA')
+        preloaded[Utils().resource_path("assets/picture/team_frame.dds")] = Image.open(Utils().resource_path("assets/picture/team_frame.dds")).convert('RGBA')
+        preloaded[Utils().resource_path("assets/picture/title_frame.dds")] = Image.open(Utils().resource_path("assets/picture/title_frame.dds")).convert('RGBA')
         return preloaded
     
     def preload_fonts(self):
@@ -85,8 +89,10 @@ class DisplayWindow:
             for size in range(3, 61):
                 preloaded_fonts[size] = ImageFont.truetype(font_path, size)
         BPM_font_path = Utils().resource_path("assets/fonts/Helvetica Bold.ttf")
-        preloaded_BPM_font = ImageFont.truetype(BPM_font_path, 24)
-        return preloaded_fonts, preloaded_BPM_font
+        preloaded_BPM_font = ImageFont.truetype(BPM_font_path, self._scale_font_size(24))
+        team_font_path = Utils().resource_path("assets/fonts/SourceHanSansSC-Medium-2.otf")
+        preloaded_team_font = ImageFont.truetype(team_font_path, self._scale_font_size(36))
+        return preloaded_fonts, preloaded_BPM_font,preloaded_team_font, preloaded_team_font
 
     def setup_ui(self, window_size=None):
         """设置用户界面"""
@@ -96,10 +102,6 @@ class DisplayWindow:
         
         width, height = window_size
         self.root.geometry(f"{width}x{height}")
-        
-        # 计算缩放系数（相对于1920x1080的默认大小）
-        self.scale_x = width / 1920.0
-        self.scale_y = height / 1080.0
         
         # 禁止调整窗口大小（宽度和高度都不可调整）
         self.root.resizable(False, False)
@@ -1682,6 +1684,18 @@ class DisplayWindow:
         total_score_width = self._scale((total_score_right - total_score_left) * image_time, 'x')
         total_score_height = self._scale((total_score_bottom - total_score_top) * image_time, 'y')
 
+        team_frame_time = 1.27
+        team_frame_path = Utils().resource_path("assets/picture/team_frame.dds")
+        team_frame_width = self._scale(704 * team_frame_time, 'x')
+        team_frame_height = self._scale(74 * team_frame_time, 'y')
+        team_font_path = Utils().resource_path("assets/fonts/SourceHanSansSC-Medium-2.otf")
+        team_font_size = self._scale_font_size(42)
+
+        title_frame_time = 1.5
+        title_frame_path = Utils().resource_path("assets/picture/title_frame.dds")
+        title_frame_width = self._scale(582 * title_frame_time, 'x')
+        title_frame_height = self._scale(51 * title_frame_time, 'y')
+
          # 获取曲目信息
         random_music1 = random.choice(list(Utils().music_list.values()))
         music1_id = data['track1_music'].split()[0]
@@ -1716,47 +1730,7 @@ class DisplayWindow:
                 anchor=tk.CENTER
             )
 
-            # 队名与选手名
-            text = data['team1']
-            self.canvas.create_text(
-                canvas_width // 2 - self._scale(400, 'x'),
-                self._scale(130, 'y'),
-                text=text,
-                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
-                fill="black",
-                anchor=tk.CENTER
-            )
-
-            text = data['player1']
-            self.canvas.create_text(
-                canvas_width // 2 - self._scale(400, 'x'),
-                self._scale(200, 'y'),
-                text=text,
-                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
-                fill="black",
-                anchor=tk.CENTER
-            )
-
-            text = data['team2']
-            self.canvas.create_text(
-                canvas_width // 2 + self._scale(400, 'x'),
-                self._scale(105, 'y'),
-                text=text,
-                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
-                fill="black",
-                anchor=tk.CENTER
-            )
-
-            text = data['player2']
-            self.canvas.create_text(
-                canvas_width // 2 + self._scale(400, 'x'),
-                self._scale(175, 'y'),
-                text=text,
-                font=("Microsoft YaHei", self._scale_font_size(40), "bold"),
-                fill="black",
-                anchor=tk.CENTER
-            )
-            
+            # 大框大小
             new_width = self._scale(890, 'x')  # 指定大小
             new_height = self._scale(800, 'y')
             gray_overlay = Image.new('RGBA', (new_width - self._scale(20, 'x'), new_height // 2 + self._scale(12, 'y')), (128, 128, 128, 255))  # 灰色长方形
@@ -1776,7 +1750,25 @@ class DisplayWindow:
                 track3_score1 = 0
             total_score1 = track1_score1 + track2_score1 + track3_score1
 
-            overlay_list1 = [{'image': gray_overlay, 'position': (new_width//2, new_height//2 + self._scale(185, 'y')), 'anchor': 'center'}]
+            overlay_list1 = [
+                {'image': gray_overlay, 'position': (new_width//2, new_height//2 + self._scale(185, 'y')), 'anchor': 'center'},
+                {
+                    'path': team_frame_path, # 队伍框
+                    'size': (team_frame_width, team_frame_height),
+                    'position': (
+                        new_width // 2,
+                        self._scale(28, 'y')
+                    )
+                },
+                {
+                    'path': title_frame_path, # 昵称框
+                    'size': (title_frame_width, title_frame_height),
+                    'position': (
+                        new_width // 2,
+                        self._scale(136, 'y')
+                    )
+                },
+            ]
             position_x = new_width - self._scale(40, 'x')
             for index in range(len(str(total_score1))):
                 digit = int(str(total_score1)[-index-1])
@@ -1810,7 +1802,29 @@ class DisplayWindow:
             tk_new_overlay1 = self.overlay_image(
                 base_image_path=None,
                 img_overlay_list=overlay_list1,
-                text_overlay_list=[],
+                text_overlay_list=[
+                    {
+                        'text': data['team1'], # 队名
+                        'position': (
+                            self._scale(200, 'x'),
+                            self._scale(45, 'y')
+                        ),
+                        'font_size': team_font_size,
+                        'font_path': team_font_path,
+                        'anchor': 'lm',
+                        'color': (255, 255, 255)
+                    },
+                    {
+                        'text': data['player1'], # 选手名
+                        'position': (
+                            new_width // 2,
+                            self._scale(136, 'y')
+                        ),
+                        'font_size': team_font_size,
+                        'font_path': team_font_path,
+                        'anchor': 'mm'
+                    }
+                ],
                 target_size=(new_width, new_height),
                 base_color=(254, 254, 228, 255)  # 淡黄色
             )
@@ -2268,8 +2282,10 @@ class DisplayWindow:
                 # 加载字体
                 if text_info.get('font_path'):
                     font_path = text_info.get('font_path')
-                    if font_path == Utils().resource_path("assets/fonts/Helvetica Bold.ttf") and font_size == 24:
+                    if font_path == Utils().resource_path("assets/fonts/Helvetica Bold.ttf") and font_size == self._scale_font_size(24):
                         font = self.preloaded_BPM_font
+                    elif font_path == Utils().resource_path("assets/fonts/SourceHanSansSC-Medium-2.otf") and font_size == self._scale_font_size(36):
+                        font = self.preloaded_team_font
                     else:
                         font = ImageFont.truetype(font_path, font_size)
                 else:
