@@ -1627,6 +1627,31 @@ class DisplayWindow:
         result_comma_height = self._scale(result_comma_bottom - result_comma_top, 'y')
         result_comma_width = self._scale(result_comma_right - result_comma_left, 'x')
 
+        font_path = Utils().resource_path("assets/fonts/SEGA_MARUGOTHICDB.ttf")
+        text_max_width = self._scale(580, 'x')
+        text_font_size = 23
+
+        jacket_width = self._scale(83 * image_time, 'x')
+        jacket_height = self._scale(83 * image_time, 'y')
+
+        random_music1 = random.choice(list(Utils().music_list.values()))
+        music1_id = data['track1_music'].split()[0]
+        music1 = Utils().music_list.get(music1_id, random_music1) # 如果找不到对应曲目，就用随机曲
+        music1_name, title_font_size = self.get_adaptive_font_size(music1['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
+        jacket1_path = music1['Jacket']
+
+        random_music2 = random.choice(list(Utils().music_list.values()))
+        music2_id = data['track1_music'].split()[0]
+        music2 = Utils().music_list.get(music2_id, random_music2) # 如果找不到对应曲目，就用随机曲
+        music2_name, title_font_size = self.get_adaptive_font_size(music2['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
+        jacket2_path = music2['Jacket']
+
+        random_music3 = random.choice(list(Utils().music_list.values()))
+        music3_id = data['track1_music'].split()[0]
+        music3 = Utils().music_list.get(music3_id, random_music3) # 如果找不到对应曲目，就用随机曲
+        music3_name, title_font_size = self.get_adaptive_font_size(music3['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
+        jacket3_path = music3['Jacket']
+
         if data['music_number'] == '2':
             #比赛进程
             text = '大将战'
@@ -1747,11 +1772,55 @@ class DisplayWindow:
                 self.image_references.append(tk_new_overlay1)
 
             # 右侧框
+            try:
+                track1_score2 = max(0, min(1001000, int(data['track1_2p_score'])))
+            except (ValueError, TypeError):
+                track1_score2 = 0
+            try:
+                track2_score2 = max(0, min(1001000, int(data['track2_2p_score'])))
+            except (ValueError, TypeError):
+                track2_score2 = 0
+            try:
+                track3_score2 = max(0, min(1001000, int(data['track3_2p_score'])))
+            except (ValueError, TypeError):
+                track3_score2 = 0
+            total_score2 = track1_score2 + track2_score2 + track3_score2
+
+            overlay_list2 = [{'image': gray_overlay, 'position': (new_width//2, new_height//2 + self._scale(185, 'y')), 'anchor': 'center'}]
+            position_x = new_width - self._scale(40, 'x')
+            for index in range(len(str(total_score2))):
+                digit = int(str(total_score2)[-index-1])
+                if index % 3 == 0 and index != 0:
+                    position_x -= self._scale(75, 'x')
+                    overlay_list2.append(
+                        {
+                            'path': result_comma_path,
+                            'position': (
+                                position_x,
+                                new_height//2 - self._scale(100 - 38, 'y')
+                            ),
+                            'size': (int(result_comma_width * result_total_time), int(result_comma_height * result_total_time)),
+                            'crop': (result_comma_left, result_comma_top, result_comma_right, result_comma_bottom)
+                        }
+                    )
+                    position_x -= self._scale(65, 'x')
+                else:
+                    position_x -= self._scale(90, 'x')
+                overlay_list2.append(
+                    {
+                        'path': result_num_path,
+                        'position': (
+                            position_x,
+                            new_height//2 - self._scale(100, 'y')
+                        ),
+                        'size': (int(result_num_width[digit] * result_total_time), int(result_num_height * result_total_time)),
+                        'crop': (result_num_left[digit], result_num_top, result_num_right[digit], result_num_bottom)
+                    }
+                )
+
             tk_new_overlay2 = self.overlay_image(
                 base_image_path=None,
-                img_overlay_list=[
-                    {'image': gray_overlay, 'position': (new_width//2, new_height//2), 'anchor': 'center'}
-                ],
+                img_overlay_list=overlay_list2,
                 text_overlay_list=[],
                 target_size=(new_width, new_height),
                 base_color=(255, 255, 224, 255)  # 淡黄色
@@ -1765,14 +1834,44 @@ class DisplayWindow:
                 )
                 self.image_references.append(tk_new_overlay2)
 
-            for Index in range(3):
+            # 各个单曲成绩
+            for Index in range(6):
                 if Index == 0:
                     score = track1_score1
                 elif Index == 1:
                     score = track2_score1
                 elif Index == 2:
                     score = track3_score1
-                overlay_list = []
+                elif Index == 3:
+                    score = track1_score2
+                elif Index == 4:
+                    score = track2_score2
+                elif Index == 5:
+                    score = track3_score2
+                if Index < 3:
+                    position_in_canvas = -460
+                elif Index >= 3:
+                    position_in_canvas = 460
+                if Index % 3 == 0:
+                    music_name = music1_name
+                    jacket_path = jacket1_path
+                elif Index % 3 == 1:
+                    music_name = music2_name
+                    jacket_path = jacket2_path
+                elif Index % 3 == 2:
+                    music_name = music3_name
+                    jacket_path = jacket3_path
+
+                overlay_list = [
+                    {
+                        'path': jacket_path,
+                        'position': (
+                            self._scale(174, 'x'),
+                            int(result_frame_height * result_frame_time) // 2
+                        ),
+                        'size': (jacket_width, jacket_height),
+                    }
+                ]
                 position_x = int(result_frame_width * result_frame_time) - self._scale(20, 'x')
                 for index in range(len(str(score))):
                     digit = int(str(score)[-index-1])
@@ -1806,13 +1905,24 @@ class DisplayWindow:
                 tk_left_picture = self.overlay_image(
                     base_image_path=result_frame_path,
                     img_overlay_list=overlay_list,
-                    text_overlay_list=[],
+                    text_overlay_list=[
+                        {
+                            'text': music_name,
+                            'position': (
+                                self._scale(245, 'x'),
+                                self._scale(20, 'y')
+                            ),
+                            'font_size': title_font_size,
+                            'color': (255, 255, 255),
+                            'anchor': 'lm'
+                        },
+                    ],
                     target_size=(int(result_frame_width*result_frame_time), int(result_frame_height*result_frame_time))
                 )
                 if tk_left_picture:
                     self.canvas.create_image(
-                        canvas_width // 2 - self._scale(460, 'x'),
-                        canvas_height // 2 + self._scale(100 + 135 * Index, 'y'),
+                        canvas_width // 2 + self._scale(position_in_canvas, 'x'),
+                        canvas_height // 2 + self._scale(100 + 135 * (Index % 3), 'y'),
                         image=tk_left_picture,
                         anchor=tk.CENTER
                     )
