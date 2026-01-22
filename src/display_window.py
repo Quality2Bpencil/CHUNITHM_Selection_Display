@@ -2939,7 +2939,7 @@ class DisplayWindow:
                 digit = int(str(total_score2)[-index-1])
                 if index % 3 == 0 and index != 0:
                     position_x -= self._scale(75, 'x')
-                    overlay_list1.append(
+                    overlay_list2.append(
                         {
                             'path': result_comma_path,
                             'position': (
