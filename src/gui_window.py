@@ -150,7 +150,7 @@ class GUIWindow:
         process_frame.pack(fill=tk.X, pady=(0, 10))
         tk.Label(process_frame, text="比赛进程: ").pack(side=tk.LEFT)
         self.entry_process1 = ttk.Combobox(process_frame,
-                                        values=["先锋战", "中坚战", "副将战", "大将战"],
+                                        values=["先锋战", "中坚战", "副将战", "大将战", "淘汰赛"],
                                         state="readonly",  # 只读，不能输入
                                         width=20)
         self.entry_process1.pack(side=tk.LEFT, padx=(5, 10))
@@ -272,14 +272,14 @@ class GUIWindow:
         music_number_frame.pack(fill=tk.X, pady=(0, 10))
         tk.Label(music_number_frame, text="曲数: ").pack(side=tk.LEFT)
         self.entry_music_number = ttk.Combobox(music_number_frame,
-                                        values=["2", "3"],
+                                        values=["2", "3", "4"],
                                         state="readonly",  # 只读，不能输入
                                         width=20)
         self.entry_music_number.pack(side=tk.LEFT, padx=(5, 10))
         self.entry_music_number.set("2")
         tk.Label(music_number_frame, text="比赛进程: ").pack(side=tk.LEFT)
         self.entry_process2 = ttk.Combobox(music_number_frame,
-                                        values=["先锋战", "中坚战", "副将战", "大将战"],
+                                        values=["先锋战", "中坚战", "副将战", "大将战", "淘汰赛"],
                                         state="readonly",  # 只读，不能输入
                                         width=20)
         self.entry_process2.pack(side=tk.LEFT, padx=(5, 10))
@@ -355,6 +355,23 @@ class GUIWindow:
         ttk.Label(track3_frame, text="2P分数: ").pack(side=tk.LEFT)
         self.track3_2p_score = ttk.Entry(track3_frame, width=10)
         self.track3_2p_score.pack(side=tk.LEFT, padx=(0, 10))
+
+        # Track4
+        track4_frame = ttk.Frame(result_frame)
+        track4_frame.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(track4_frame, text="Track 4: ").pack(side=tk.LEFT)
+        self.track4_music = ttk.Combobox(track4_frame, 
+                                         values=Utils().searchable_music_list,
+                                         state="normal",  # 可输入
+                                         width=33)
+        self.track4_music.pack(side=tk.LEFT, padx=(0, 10))
+        self.track4_music.bind("<KeyRelease>", self.search_music)
+        ttk.Label(track4_frame, text="1P分数: ").pack(side=tk.LEFT)
+        self.track4_1p_score = ttk.Entry(track4_frame, width=10)
+        self.track4_1p_score.pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(track4_frame, text="2P分数: ").pack(side=tk.LEFT)
+        self.track4_2p_score = ttk.Entry(track4_frame, width=10)
+        self.track4_2p_score.pack(side=tk.LEFT, padx=(0, 10))
 
     def search_music(self, event):
         """搜索功能"""

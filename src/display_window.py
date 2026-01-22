@@ -160,7 +160,7 @@ class DisplayWindow:
         if filtered_music == []:
             filtered_music = list(Utils().music_list.values())
 
-        random_music_number = 35 + random.randint(-5, 5)
+        random_music_number = 30 + random.randint(-5, 5)
         random_music_list = []
         for index in range(random_music_number):
             music = random.choice(filtered_music)
@@ -1069,7 +1069,7 @@ class DisplayWindow:
                         'text': data['team1'] + ' - ' + data['player1'],
                         'position': (
                             title_frame_width // 2,
-                            title_frame_height // 2 - self._scale(3, 'y'),
+                            title_frame_height // 2 - self._scale(5, 'y'),
                         ),
                         'font_size': title_font_size,
                         'font_path': title_font_path,
@@ -1095,7 +1095,7 @@ class DisplayWindow:
                         'text': data['team2'] + ' - ' + data['player2'],
                         'position': (
                             title_frame_width // 2,
-                            title_frame_height // 2 - self._scale(3, 'y'),
+                            title_frame_height // 2 - self._scale(5, 'y'),
                         ),
                         'font_size': title_font_size,
                         'font_path': title_font_path,
@@ -1778,13 +1778,13 @@ class DisplayWindow:
         track_top = 5
         track_bottom = 75
         track_left = [
-            75, 144, 213
+            75, 144, 213, 284
         ]
         track_right = [
-            138, 207, 276
+            138, 207, 276, 349
         ]
         track_width = [
-            self._scale((track_right[i] - track_left[i]) * image_time, 'x') for i in range(3)
+            self._scale((track_right[i] - track_left[i]) * image_time, 'x') for i in range(4)
         ]
         track_height = self._scale((track_bottom - track_top) * image_time, 'y')
 
@@ -1837,6 +1837,13 @@ class DisplayWindow:
         music3_name, title_font_size0 = self.get_adaptive_font_size(music3['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
         music3_const = music3['Const']
         jacket3_path = music3['Jacket']
+
+        random_music4 = random.choice(list(Utils().music_list.values()))
+        music4_id = data['track4_music'].split()[0]
+        music4 = Utils().music_list.get(music4_id, random_music4) # 如果找不到对应曲目，就用随机曲
+        music4_name, title_font_size0 = self.get_adaptive_font_size(music4['Name'], font_path, text_max_width, 56, initial_size=text_font_size, min_size=text_font_size)
+        music4_const = music4['Const']
+        jacket4_path = music4['Jacket']
 
         kop_frame_path = Utils().resource_path("assets/picture/kop_frame.dds")
         kop_frame_time = 1.8
@@ -2728,6 +2735,435 @@ class DisplayWindow:
                     self.canvas.create_image(
                         canvas_width // 2 + self._scale(position_in_canvas, 'x'),
                         canvas_height // 2 + self._scale(150 + 135 * (Index % 3), 'y'),
+                        image=tk_left_picture,
+                        anchor=tk.CENTER
+                    )
+                    self.image_references.append(tk_left_picture)
+        elif data['music_number'] == '4':
+            #比赛进程
+            tk_new_overlay0 = self.overlay_image(
+                base_image_path=kop_frame_path,
+                img_overlay_list=[],
+                text_overlay_list=[
+                    {
+                        'text': process_text,
+                        'position': (
+                            kop_frame_width // 2,
+                            kop_frame_height // 2
+                        ),
+                        'font_size': kop_font_size,
+                        'font_path': kop_font_path,
+                        'anchor': 'mm',
+                        'color': (255, 255, 255)
+                    }
+                ],
+                target_size=(kop_frame_width, kop_frame_height)
+            )
+            if tk_new_overlay0:
+                self.canvas.create_image(
+                    canvas_width // 2,
+                    self._scale(95, 'y'),  # 位置
+                    image=tk_new_overlay0,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay0)
+
+            # 大框大小
+            new_width = self._scale(890, 'x')  # 指定大小
+            new_height = self._scale(860, 'y')
+            gray_overlay = Image.new('RGBA', (new_width - self._scale(20, 'x'), self._scale(542, 'y')), (30, 44, 60, 255))  # 靛青色长方形
+            
+            # 分数
+            try:
+                track1_score1 = max(0, min(1010000, int(data['track1_1p_score'])))
+            except (ValueError, TypeError):
+                track1_score1 = 0
+            try:
+                track2_score1 = max(0, min(1010000, int(data['track2_1p_score'])))
+            except (ValueError, TypeError):
+                track2_score1 = 0
+            try:
+                track3_score1 = max(0, min(1010000, int(data['track3_1p_score'])))
+            except (ValueError, TypeError):
+                track3_score1 = 0
+            try:
+                track4_score1 = max(0, min(1010000, int(data['track4_1p_score'])))
+            except (ValueError, TypeError):
+                track4_score1 = 0
+            total_score1 = track1_score1 + track2_score1 + track3_score1 + track4_score1
+
+            try:
+                track1_score2 = max(0, min(1010000, int(data['track1_2p_score'])))
+            except (ValueError, TypeError):
+                track1_score2 = 0
+            try:
+                track2_score2 = max(0, min(1010000, int(data['track2_2p_score'])))
+            except (ValueError, TypeError):
+                track2_score2 = 0
+            try:
+                track3_score2 = max(0, min(1010000, int(data['track3_2p_score'])))
+            except (ValueError, TypeError):
+                track3_score2 = 0
+            try:
+                track4_score2 = max(0, min(1010000, int(data['track4_2p_score'])))
+            except (ValueError, TypeError):
+                track4_score2 = 0
+            total_score2 = track1_score2 + track2_score2 + track3_score2 + track4_score2
+
+            # 左侧框
+            if total_score1 >= total_score2:
+                rank_path = rank1_path
+            else:
+                rank_path = rank2_path
+            overlay_list1 = [
+                {'image': gray_overlay, 'position': (new_width//2, new_height//2 + self._scale(150, 'y')), 'anchor': 'center'},
+                {
+                    'path': team_frame_path, # 队伍框
+                    'size': (team_frame_width, team_frame_height),
+                    'position': (
+                        new_width // 2,
+                        self._scale(28, 'y')
+                    )
+                },
+                {
+                    'path': total_score_path, # 总成绩图标
+                    'size': (total_score_width, total_score_height),
+                    'position': (
+                        self._scale(215, 'x'),
+                        self._scale(207 - 70, 'y')
+                    ),
+                    'crop': (total_score_left, total_score_top, total_score_right, total_score_bottom)
+                },
+                {
+                    'path': rank_path, # 排名
+                    'size': (rank_width, rank_height),
+                    'position': (
+                        self._scale(900, 'x'),
+                        self._scale(173 - 70, 'y')
+                    )
+                }
+            ]
+            position_x = new_width - self._scale(40, 'x')
+            for index in range(len(str(total_score1))):
+                digit = int(str(total_score1)[-index-1])
+                if index % 3 == 0 and index != 0:
+                    position_x -= self._scale(75, 'x')
+                    overlay_list1.append(
+                        {
+                            'path': result_comma_path,
+                            'position': (
+                                position_x,
+                                new_height//2 - self._scale(100 - 38 + 96, 'y')
+                            ),
+                            'size': (int(result_comma_width * result_total_time), int(result_comma_height * result_total_time)),
+                            'crop': (result_comma_left, result_comma_top, result_comma_right, result_comma_bottom)
+                        }
+                    )
+                    position_x -= self._scale(65, 'x')
+                else:
+                    position_x -= self._scale(90, 'x')
+                overlay_list1.append(
+                    {
+                        'path': result_num_path,
+                        'position': (
+                            position_x,
+                            new_height//2 - self._scale(100 + 96, 'y')
+                        ),
+                        'size': (int(result_num_width[digit] * result_total_time), int(result_num_height * result_total_time)),
+                        'crop': (result_num_left[digit], result_num_top, result_num_right[digit], result_num_bottom)
+                    }
+                )
+            tk_new_overlay1 = self.overlay_image(
+                base_image_path=None,
+                img_overlay_list=overlay_list1,
+                text_overlay_list=[
+                    {
+                        'text': data['team1'], # 队名
+                        'position': (
+                            self._scale(200, 'x'),
+                            self._scale(45, 'y')
+                        ),
+                        'font_size': team_font_size,
+                        'font_path': team_font_path,
+                        'anchor': 'lm',
+                        'color': (255, 255, 255)
+                    },
+                ],
+                target_size=(new_width, new_height),
+                base_color=(254, 254, 228, 255)  # 淡黄色
+            )
+            if tk_new_overlay1:
+                self.canvas.create_image(
+                    canvas_width // 2 - self._scale(460, 'x'),
+                    canvas_height // 2 + self._scale(80, 'y'),  # 位置
+                    image=tk_new_overlay1,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay1)
+
+            # 右侧框
+            if total_score2 >= total_score1:
+                rank_path = rank1_path
+            else:
+                rank_path = rank2_path
+            overlay_list2 = [
+                {'image': gray_overlay, 'position': (new_width//2, new_height//2 + self._scale(150, 'y')), 'anchor': 'center'},
+                {
+                    'path': team_frame_path, # 队伍框
+                    'size': (team_frame_width, team_frame_height),
+                    'position': (
+                        new_width // 2,
+                        self._scale(28, 'y')
+                    )
+                },
+                {
+                    'path': total_score_path, # 总成绩图标
+                    'size': (total_score_width, total_score_height),
+                    'position': (
+                        self._scale(215, 'x'),
+                        self._scale(207 - 70, 'y')
+                    ),
+                    'crop': (total_score_left, total_score_top, total_score_right, total_score_bottom)
+                },
+                {
+                    'path': rank_path, # 排名
+                    'size': (rank_width, rank_height),
+                    'position': (
+                        self._scale(900, 'x'),
+                        self._scale(173 - 70, 'y')
+                    )
+                }
+            ]
+            position_x = new_width - self._scale(40, 'x')
+            for index in range(len(str(total_score2))):
+                digit = int(str(total_score2)[-index-1])
+                if index % 3 == 0 and index != 0:
+                    position_x -= self._scale(75, 'x')
+                    overlay_list1.append(
+                        {
+                            'path': result_comma_path,
+                            'position': (
+                                position_x,
+                                new_height//2 - self._scale(100 - 38 + 96, 'y')
+                            ),
+                            'size': (int(result_comma_width * result_total_time), int(result_comma_height * result_total_time)),
+                            'crop': (result_comma_left, result_comma_top, result_comma_right, result_comma_bottom)
+                        }
+                    )
+                    position_x -= self._scale(65, 'x')
+                else:
+                    position_x -= self._scale(90, 'x')
+                overlay_list2.append(
+                    {
+                        'path': result_num_path,
+                        'position': (
+                            position_x,
+                            new_height//2 - self._scale(100 + 96, 'y')
+                        ),
+                        'size': (int(result_num_width[digit] * result_total_time), int(result_num_height * result_total_time)),
+                        'crop': (result_num_left[digit], result_num_top, result_num_right[digit], result_num_bottom)
+                    }
+                )
+            tk_new_overlay2 = self.overlay_image(
+                base_image_path=None,
+                img_overlay_list=overlay_list2,
+                text_overlay_list=[
+                    {
+                        'text': data['team2'], # 队名
+                        'position': (
+                            self._scale(200, 'x'),
+                            self._scale(45, 'y')
+                        ),
+                        'font_size': team_font_size,
+                        'font_path': team_font_path,
+                        'anchor': 'lm',
+                        'color': (255, 255, 255)
+                    },
+                ],
+                target_size=(new_width, new_height),
+                base_color=(254, 254, 228, 255)  # 淡黄色
+            )
+            if tk_new_overlay2:
+                self.canvas.create_image(
+                    canvas_width // 2 + self._scale(460, 'x'),
+                    canvas_height // 2 + self._scale(80, 'y'),  # 位置
+                    image=tk_new_overlay2,
+                    anchor=tk.CENTER
+                )
+                self.image_references.append(tk_new_overlay2)
+
+            # 各个单曲成绩
+            for Index in range(8):
+                if Index == 0:
+                    score = track1_score1
+                elif Index == 1:
+                    score = track2_score1
+                elif Index == 2:
+                    score = track3_score1
+                elif Index == 3:
+                    score = track4_score1
+                elif Index == 4:
+                    score = track1_score2
+                elif Index == 5:
+                    score = track2_score2
+                elif Index == 6:
+                    score = track3_score2
+                elif Index == 7:
+                    score = track4_score2
+                if Index < 4:
+                    position_in_canvas = -460
+                elif Index >= 4:
+                    position_in_canvas = 460
+                if Index % 4 == 0:
+                    music_name = music1_name
+                    const = music1_const
+                    jacket_path = jacket1_path
+                elif Index % 4 == 1:
+                    music_name = music2_name
+                    const = music2_const
+                    jacket_path = jacket2_path
+                elif Index % 4 == 2:
+                    music_name = music3_name
+                    const = music3_const
+                    jacket_path = jacket3_path
+                elif Index % 4 == 3:
+                    music_name = music4_name
+                    const = music4_const
+                    jacket_path = jacket4_path
+
+                overlay_list = [
+                    {
+                        'path': track_path, # Track
+                        'position': (
+                            self._scale(61, 'x'),
+                            int(result_frame_height * result_frame_time) // 2
+                        ),
+                        'size': (track_width[Index % 4], track_height),
+                        'crop': (track_left[Index % 4], track_top, track_right[Index % 4], track_bottom)
+                    },
+                    {
+                        'path': jacket_path, # 曲绘
+                        'position': (
+                            self._scale(174, 'x'),
+                            int(result_frame_height * result_frame_time) // 2
+                        ),
+                        'size': (jacket_width, jacket_height),
+                    },
+                    {
+                        'path': level_frame_path, # 等级框
+                        'position': (
+                            self._scale(273, 'x'),
+                            self._scale(78, 'y'),
+                        ),
+                        'size': (level_frame_width, level_frame_height),
+                        'crop': (level_frame_left, level_frame_top, level_frame_right, level_frame_bottom)
+                    }
+                ]
+
+                # 等级
+                if const < 10:
+                    pass # 应该不会打小于10级的歌吧，我是懒狗不做了
+                elif const <100:
+                    number1 = int(const) // 10
+                    number2 = int(const) % 10
+                    decimal = const - int(const)
+                    crop_region = (level_number_left[number1], level_number_top, level_number_right[number1], level_number_bottom)
+                    level_number_width = self._scale(level_number_right[number1] - level_number_left[number1], 'x')
+                    overlay_list.append(
+                        {
+                            'path': level_number_path,
+                            'position': (
+                                self._scale(273 - 18, 'x'),
+                                self._scale(88, 'y'),
+                            ),
+                            'size': (int(level_number_width*level_number_time), int(level_number_height*level_number_time)),
+                            'alpha': 1.0,
+                            'crop': crop_region
+                        }
+                    )
+                    crop_region = (level_number_left[number2], level_number_top, level_number_right[number2], level_number_bottom)
+                    level_number_width = self._scale(level_number_right[number2] - level_number_left[number2], 'x')
+                    overlay_list.append(
+                        {
+                            'path': level_number_path,
+                            'position': (
+                                self._scale(273 + 12, 'x'),
+                                self._scale(88, 'y'),
+                            ),
+                            'size': (int(level_number_width*level_number_time), int(level_number_height*level_number_time)),
+                            'alpha': 1.0,
+                            'crop': crop_region
+                        }
+                    )
+                    if decimal >= 0.5:
+                        crop_region = (level_plus_left, level_plus_top, level_plus_right, level_plus_bottom)
+                        overlay_list.append(
+                            {
+                                'path': level_number_path,
+                                'position': (
+                                    self._scale(273 + 30, 'x'),
+                                    self._scale(78 - 10, 'y'),
+                                ),
+                                'size': (int(level_plus_width*level_number_time), int(level_plus_height*level_number_time)),
+                                'alpha': 1.0,
+                                'crop': crop_region
+                            }
+                        )
+                else:
+                    pass
+
+                # 成绩
+                position_x = int(result_frame_width * result_frame_time) + self._scale(10, 'x')
+                for index in range(len(str(score))):
+                    digit = int(str(score)[-index-1])
+                    if index % 3 == 0 and index != 0:
+                        position_x -= self._scale(75 * 0.65, 'x')
+                        overlay_list.append(
+                            {
+                                'path': result_comma_path,
+                                'position': (
+                                    position_x,
+                                    result_frame_height//2 + self._scale(19 + 37, 'y')
+                                ),
+                                'size': (int(result_comma_width * result_single_time), int(result_comma_height * result_single_time)),
+                                'crop': (result_comma_left, result_comma_top, result_comma_right, result_comma_bottom)
+                            }
+                        )
+                        position_x -= self._scale(65 * 0.65, 'x')
+                    else:
+                        position_x -= self._scale(90 * 0.65, 'x')
+                    overlay_list.append(
+                        {
+                            'path': result_num_path,
+                            'position': (
+                                position_x,
+                                int(result_frame_height * result_frame_time) // 2 + self._scale(19, 'y')
+                            ),
+                            'size': (int(result_num_width[digit] * result_single_time), int(result_num_height * result_single_time)),
+                            'crop': (result_num_left[digit], result_num_top, result_num_right[digit], result_num_bottom)
+                        }
+                    )
+                tk_left_picture = self.overlay_image(
+                    base_image_path=result_frame_path,
+                    img_overlay_list=overlay_list,
+                    text_overlay_list=[
+                        {
+                            'text': music_name,
+                            'position': (
+                                self._scale(245, 'x'),
+                                self._scale(20, 'y')
+                            ),
+                            'font_size': title_font_size0,
+                            'color': (255, 255, 255),
+                            'anchor': 'lm'
+                        },
+                    ],
+                    target_size=(int(result_frame_width*result_frame_time), int(result_frame_height*result_frame_time))
+                )
+                if tk_left_picture:
+                    self.canvas.create_image(
+                        canvas_width // 2 + self._scale(position_in_canvas, 'x'),
+                        canvas_height // 2 + self._scale(30 + 133 * (Index % 4), 'y'),
                         image=tk_left_picture,
                         anchor=tk.CENTER
                     )

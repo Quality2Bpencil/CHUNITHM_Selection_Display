@@ -65,6 +65,9 @@ class Controller:
             'track3_music': self.gui_window.track3_music.get() or "music3",
             'track3_1p_score': self.gui_window.track3_1p_score.get() or "0",
             'track3_2p_score': self.gui_window.track3_2p_score.get() or "0",
+            'track4_music': self.gui_window.track4_music.get() or "music4",
+            'track4_1p_score': self.gui_window.track4_1p_score.get() or "0",
+            'track4_2p_score': self.gui_window.track4_2p_score.get() or "0",
             'process': self.gui_window.entry_process2.get() or "先锋战"
         }
         self._send_command("SHOW_ROUND_RESULT", data)
