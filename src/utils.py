@@ -52,10 +52,3 @@ class Utils:
     
     def add_music_list(self, list_name, list_value):
         self.users_music_list[list_name] = list_value
-            
-class CurrentProcess(Enum):
-    NONE = 0
-    DISPLAY_SELECTION = 1
-    RANDOM_MUSIC = 2
-    SHOW_ROUND_RESULT = 3
-    SHOW_TEAM_SCORE = 4

@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, font
 from PIL import Image, ImageTk, ImageDraw, ImageFont
-from utils import Utils, CurrentProcess
+from utils import Utils
 import os
 import random
 
@@ -31,7 +31,7 @@ class DisplayWindow:
         self.preloaded_fonts, self.preloaded_BPM_font, self.preloaded_team_font, self.preloaded_title_font = self.preload_fonts()
 
         self._display_background('background')
-        self.current_process = CurrentProcess.NONE
+        self.current_process = 0
         
     def _scale(self, value, axis='x'):
         """应用缩放系数
@@ -169,6 +169,7 @@ class DisplayWindow:
         self.scroller(random_music_number, random_music_list)
 
     def scroller(self, random_music_number, random_music_list):
+        process = self.current_process
 
         self.canvas.delete("all")
         self.image_references.clear()
@@ -502,7 +503,7 @@ class DisplayWindow:
             index_range = [random_music_number-1, random_music_number-3]
             alpha = 1.0
             def step():
-                if self.current_process != CurrentProcess.RANDOM_MUSIC:
+                if self.current_process != process:
                     return
 
                 nonlocal alpha
@@ -587,7 +588,7 @@ class DisplayWindow:
         total_distance = self._scale((random_music_number - 2) * 800, 'x')
 
         def move():
-            if self.current_process != CurrentProcess.RANDOM_MUSIC:
+            if self.current_process != process:
                 return
 
             nonlocal speed, total_distance
@@ -3444,15 +3445,7 @@ class DisplayWindow:
         handler = handlers.get(command)
         if handler:
             try:
-                if command == "RANDOM_MUSIC":
-                    self.current_process = CurrentProcess.RANDOM_MUSIC
-                elif command == "DISPLAY_SELECTION":
-                    if data is None:
-                        self.current_process = CurrentProcess.NONE
-                    else:
-                        self.current_process = CurrentProcess.DISPLAY_SELECTION
-                elif command == "SHOW_ROUND_RESULT":
-                    self.current_process = CurrentProcess.SHOW_ROUND_RESULT
+                self.current_process += 1
                 handler(data)
             except Exception as e:
                 self._show_error(f"命令处理错误 ({command}): {str(e)}")

@@ -89,18 +89,6 @@ class GUIWindow:
         control_frame = ttk.LabelFrame(main_frame, text="播放控制", padding="15")
         control_frame.pack(fill=tk.X, pady=(0, 20))
 
-        # 第一行：清空屏幕按钮（居中）
-        row1_frame = ttk.Frame(control_frame)
-        row1_frame.pack(pady=10)
-
-        self.btn_clear = ttk.Button(
-            row1_frame,
-            text="清空屏幕",
-            command=self.clear_screen,
-            width=20
-        )
-        self.btn_clear.pack()
-
         # 第二行：显示选曲与随机歌曲
         row2_frame = ttk.Frame(control_frame)
         row2_frame.pack(pady=10)
@@ -135,8 +123,8 @@ class GUIWindow:
 
         self.btn_team_score = ttk.Button(
             row3_frame,
-            text="显示团队积分",
-            command=self.show_team_score,  # 需要添加这个方法
+            text="清空屏幕",
+            command=self.clear_screen,  # 需要添加这个方法
             width=20
         )
         self.btn_team_score.pack(side=tk.LEFT, padx=5)
