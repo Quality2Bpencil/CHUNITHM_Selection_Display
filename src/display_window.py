@@ -2135,9 +2135,9 @@ class DisplayWindow:
                     score = track1_score1
                 elif Index == 1:
                     score = track2_score1
-                elif Index == 3:
+                elif Index == 2:
                     score = track1_score2
-                elif Index == 4:
+                elif Index == 3:
                     score = track2_score2
                 if Index < 2:
                     position_in_canvas = -460
